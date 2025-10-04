@@ -1,5 +1,6 @@
 import customtkinter as ctk
 #import GifGenerator
+import numpy as np
 import netCDF4 as nc
 from tkinter import filedialog
 from pathlib import Path
@@ -11,8 +12,8 @@ class App():
         self.main_root = root
         self.main_root.bind('<Escape>', lambda e: self._escape())
         
-        w = self.main_root.winfo_screenwidth()
-        h = self.main_root.winfo_screenheight()
+        w = self.main_root.winfo_screenwidth()/5
+        h = self.main_root.winfo_screenheight()/5
         self.main_root.geometry(f"{w}x{h}")
         #self.main_root.after(0, lambda: self.main_root.state("zoomed"))
         self.initWidget()
@@ -41,8 +42,13 @@ class App():
 
     def getValues(self)->list:
         if self.selected_file == None : return []
+        goodlist = []
         ds = nc.Dataset(self.selected_file)
-        return [v for v in ds.variables.keys() if v.isupper()] #need to verify with shape of 4 dimensions
+        for v in ds.variables.keys() :
+            list = ds.variables[str(v)].dimensions
+            if "time" in list and "lat" in list and "lon"in list :
+                goodlist.append(v)
+        return goodlist
     
     def selectFile(self):
         self.selected_file = filedialog.askopenfilename(

@@ -1,4 +1,8 @@
 import customtkinter as ctk
+import ImageGenerator as IG
+import netCDF4 as nc
+from tkinter import filedialog
+from pathlib import Path
 
 class App():
     def __init__(self,root):
@@ -18,11 +22,34 @@ class App():
         self.gifFrame = ctk.CTkFrame(self.main_root, corner_radius=10, border_width=1, border_color="grey")
         self.gifFrame.grid(row =0,column =1,padx=5,pady=5)
 
-        self.variablesDropdown = ctk.CTkOptionMenu(self.paramsFrame, values=["test"])
-        self.variablesDropdown.grid(row=0,column=0,sticky= "nw")
+        self.generateGif = ctk.CTkButton(self.paramsFrame,text="generate")
+        self.generateGif.grid(row=1,column=0,padx=5,pady=5)
 
-    def getValues(self):
-        pass 
+        self.selected_file = None
+        self.fileSelection = ctk.CTkButton(self.paramsFrame,text="select a file",command=self.selectFile)
+        self.fileSelection.grid(row=2,column=0,padx=5,pady=5)
+        
+        self.variablesDropdown = ctk.CTkOptionMenu(self.paramsFrame, values=["no file"])
+        self.variablesDropdown.grid(row=0,column=0,padx=5,pady=5)
+
+    def getValues(self)->list:
+        if self.selected_file == None : return []
+        ds = nc.Dataset(self.selected_file)
+        return [v for v in ds.variables.keys() if v.isupper()] #need to verify with shape of 4 dimensions
+    
+    def selectFile(self):
+        self.selected_file = filedialog.askopenfilename(
+            title="Sélectionner un fichier",
+            filetypes=(("Fichiers NetCDF", "*.nc4"), ("Tous les fichiers", "*.*")))
+        values = self.getValues()
+        self.variablesDropdown.set(values[0])
+        self.variablesDropdown.configure(values=self.getValues())
+    
+        filename = Path(self.selected_file).name
+        self.fileSelection.configure(text=filename)
+        print(self.selected_file)
+        
+
 
 
 if __name__ == "__main__":

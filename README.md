@@ -1,0 +1,3 @@
+This project is for the nasa space app challenge 2025 : .
+This project  uses the SAR data from nasa, more precisely the data of atmoshperic data and humans dimensions, and finds the correlation beetween the sub-categories of thoses data.
+The main sub-data categories use are : air quality, carbone monoxide, ...

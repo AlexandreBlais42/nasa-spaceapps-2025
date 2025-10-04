@@ -23,7 +23,8 @@ class GIFGenerator:
     def generateGifs(self):
         self.dataset = nc.Dataset(self.filepath)
         self.variable = self.variable
-        self.elevations_to_generate: Set[int] = set(range(len(self.dataset.variables["lev"][:])))
+        self.elevations = self.dataset.variables["lev"][:]
+        self.elevations_to_generate: Set[int] = set(range(len(self.elevations)))
         self.prefered_elevation = 0
         self.times = self.dataset.variables["time"]
 
@@ -40,16 +41,15 @@ class GIFGenerator:
                 elevation_to_generate = list(self.elevations_to_generate)[0]
             self.generateElevation(elevation_to_generate)
 
-    def generateElevation(self, elevation: int):
-        print(elevation)
-        self.elevations_to_generate.remove(elevation)
+    def generateElevation(self, elevation_index: int):
+        self.elevations_to_generate.remove(elevation_index)
         images = []
         for i in range(len(self.times)):
-            matrix = self.data_matrix[i, elevation, :, :]
+            matrix = self.data_matrix[i, elevation_index, :, :]
             image = self.image_generator.generateFromMatrix(matrix, self.data_maximum, self.data_minimum)
             images.append(image)
 
-        filename = f"elevation-of-{elevation}.gif"
+        filename = f"elevation-of-{self.elevations[elevation_index]}.gif"
 
         Path(self.dirpath).mkdir(parents=True, exist_ok=True)
         images[0].save(self.dirpath + filename, save_all=True, append_images=images, loop=0)

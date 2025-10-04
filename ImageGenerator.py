@@ -1,4 +1,3 @@
-from math import log
 from enum import Enum
 from typing import Tuple
 import numpy as np
@@ -14,7 +13,7 @@ class ImageGeneratorMethod(Enum):
                 return value
 
             case ImageGeneratorMethod.LOGARITHMIC.value:
-                return log(value)
+                return np.log(value)
 
             case _:
                 raise InvalidImageGeneratorMethodException

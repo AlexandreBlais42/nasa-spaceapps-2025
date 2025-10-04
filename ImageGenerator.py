@@ -1,6 +1,6 @@
 from enum import Enum
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 
 class ImageGeneratorMethod(Enum):
     LINEAR = 0
@@ -35,7 +35,7 @@ class ImageGenerator:
         image_temp = Image.fromarray(matrix.astype(np.uint8))
         p_img = Image.new('P',(1,1))
         p_img.putpalette(self.color)
-        return image_temp.quantize(palette=p_img, dither=0)
+        return ImageOps.flip(image_temp.quantize(palette=p_img, dither=0))
 
 
 if __name__ == "__main__":

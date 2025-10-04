@@ -20,4 +20,4 @@ for i, time in tqdm(enumerate(ds.variables["time"][:])) :
     image = image_generator.generateFromMatrix(matrix, matrix.shape)
     images.append(image)
 
-images[0].save('test.gif', save_all=True, append_images=images)
+images[0].save('test.gif', save_all=True, append_images=images, loop=0)

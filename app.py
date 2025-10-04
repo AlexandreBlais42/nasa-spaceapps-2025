@@ -148,7 +148,7 @@ class App():
             return
 
         self.generateGif.grid_remove()
-        self.ElevationSlider.configure(from_=nb_gif, to=1, number_of_steps=nb_gif-1)
+        self.ElevationSlider.configure(from_=nb_gif, to=1, number_of_steps=nb_gif+1)
         self.ElevationSlider.set(1)
         self._last_key = None
         self.ElevationSlider.grid()

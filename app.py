@@ -71,7 +71,8 @@ class App():
         data_selected = os.path.join(os.path.splitext(Path(self.selected_file).name)[0],self.variablesDropdown.get())
         if os.path.isdir(data_selected):
             print("file found")
-            
+            self.ElevationSlider.grid()
+            self.generateGif.grid_remove()
             self.displayGif(None)
         else:
             self.ElevationSlider.grid_remove()
@@ -80,15 +81,15 @@ class App():
                 self.gif_generator = GIFGenerator(self.selected_file, self.variablesDropdown.get())
                 self.gif_generator.startGeneratingGifs()
 
+
     def displayGif(self, _):
         if self.selected_file is None:
             return
 
         satellite = os.path.splitext(Path(self.selected_file).name)[0]
-        var = self.variablesDropdown.get().split("/")[-1].strip()  # au cas où
+        var = self.variablesDropdown.get().split("/")[-1].strip()
         elevation = int(np.ceil(self.ElevationSlider.get()))
 
-        # --- clé composite pour éviter le faux "cache" ---
         key = (var, elevation)
         if getattr(self, "_last_key", None) == key:
             return
@@ -107,45 +108,52 @@ class App():
     
     def changeSlider(self, _):
         if self.selected_file is None:
+            self.generateGif.grid()
+            self.ElevationSlider.grid_remove()
+            if hasattr(self, "gif_widget"):
+                self._last_key = None
+                self.gif_widget.load("loading.gif", keep_position=True)
             return
 
         var = self.variablesDropdown.get().split("/")[-1].strip()
         base = os.path.splitext(Path(self.selected_file).name)[0]
         data_selected = os.path.join(base, var)
 
-        if os.path.isdir(data_selected):
-            files = [f for f in os.listdir(data_selected) if f.lower().endswith(".gif")]
-            nb_gif = len(files)
-
-            if nb_gif == 0:
-                self.generateGif.grid()
-                self.ElevationSlider.grid_remove()
-                if hasattr(self, "gif_widget"):
-                    self._last_key = None
-                    self.gif_widget.load("loading.gif", keep_position=True)
-                return
-
-            self.generateGif.grid_remove()
-            if nb_gif == 1:
-                self.ElevationSlider.grid_remove()
-                if hasattr(self, "gif_widget"):
-                    self._last_key = None
-                    self.gif_widget.load(os.path.join(data_selected, "1.0.gif"), keep_position=False)
-                return
-
-            # nb_gif > 1
-            self.ElevationSlider.configure(from_=1, to=nb_gif, number_of_steps=nb_gif-1)
-            self.ElevationSlider.set(1)
-
-            # IMPORTANT: réinitialiser la clé pour forcer le refresh
-            self._last_key = None
-            self.ElevationSlider.grid()
-            self.displayGif(None)
-        else:
+        if not os.path.isdir(data_selected):
             self.ElevationSlider.grid_remove()
+            self.generateGif.grid()
             if hasattr(self, "gif_widget"):
                 self._last_key = None
                 self.gif_widget.load("loading.gif", keep_position=True)
+            return
+
+        files = [f for f in os.listdir(data_selected) if f.lower().endswith(".gif")]
+        nb_gif = len(files)
+        print(nb_gif)
+
+        if nb_gif == 0:
+            self.ElevationSlider.grid_remove()
+            self.generateGif.grid()
+            if hasattr(self, "gif_widget"):
+                self._last_key = None
+                self.gif_widget.load("loading.gif", keep_position=True)
+            return
+
+        if nb_gif == 1:
+            self.ElevationSlider.grid_remove()
+            self.generateGif.grid()
+            if hasattr(self, "gif_widget"):
+                self._last_key = None
+                self.gif_widget.load(os.path.join(data_selected, "1.0.gif"), keep_position=False)
+            return
+
+        self.generateGif.grid_remove()
+        self.ElevationSlider.configure(from_=nb_gif, to=1, number_of_steps=nb_gif-1)
+        self.ElevationSlider.set(1)
+        self._last_key = None
+        self.ElevationSlider.grid()
+        self.displayGif(None)
+
 
     class GifPlayer(ctk.CTkLabel):
         def __init__(self, master, gif_path, delay=150, *args, **kwargs):

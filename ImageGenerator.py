@@ -31,7 +31,7 @@ class ImageGenerator:
         minimum_value = self.method.transform(minimum_value)
         maximum_value = self.method.transform(maximum_value)
 
-        matrix = (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value) * 255
+        matrix = 1- ( 255 * self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value)
         return Image.fromarray(matrix.astype(np.uint8))
 
 

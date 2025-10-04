@@ -1,4 +1,8 @@
 import netCDF4 as nc
+from tqdm import tqdm
+
+from ImageGenerator import ImageGenerator, ImageGeneratorMethod
+
 
 file_path = 'MERRA-2.nc4'
 ds = nc.Dataset(file_path)
@@ -8,11 +12,12 @@ ds = nc.Dataset(file_path)
 #print(ds.variables["DELP"])
 #print(ds.variables["O3"])
 #print(ds.variables["PS"])
-matrix = ds.variables["CO"][0,0,:,:]
 
-from ImageGenerator import ImageGenerator, ImageGeneratorMethod
+images = []
+for i, time in tqdm(enumerate(ds.variables["time"][:])) :
+    image_generator = ImageGenerator()
+    matrix = ds.variables["CO"][i,0,:,:]
+    image = image_generator.generateFromMatrix(matrix, matrix.shape)
+    images.append(image)
 
-# data[:,:,0,0]
-IG = image_generator = ImageGenerator()
-image = image_generator.generateFromMatrix(matrix, matrix.shape)
-image.save("test.png")
+images[0].save('test.gif', save_all=True, append_images=images)

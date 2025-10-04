@@ -42,6 +42,7 @@ class GIFGenerator:
             self.generateLevel(level_to_generate)
 
     def generateLevel(self, level_index: int):
+        print(f"Generated level {level_index}")
         self.levels_to_generate.remove(level_index)
         images = []
         for i in range(len(self.times)):
@@ -49,7 +50,7 @@ class GIFGenerator:
             image = self.image_generator.generateFromMatrix(matrix, self.data_maximum, self.data_minimum)
             images.append(image)
 
-        filename = f"level-of-{self.levels[level_index]}.gif"
+        filename = f"{self.levels[level_index]}.gif"
 
         Path(self.dirpath).mkdir(parents=True, exist_ok=True)
         images[0].save(self.dirpath + filename, save_all=True, append_images=images, loop=0)

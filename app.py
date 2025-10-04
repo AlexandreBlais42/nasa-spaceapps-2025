@@ -1,5 +1,5 @@
 import customtkinter as ctk
-#import GifGenerator
+from GIFGenerator import GIFGenerator
 import numpy as np
 import netCDF4 as nc
 from tkinter import filedialog
@@ -16,6 +16,7 @@ class App():
         h = self.main_root.winfo_screenheight()/5
         self.main_root.geometry(f"{w}x{h}")
         #self.main_root.after(0, lambda: self.main_root.state("zoomed"))
+        self.gif_generator = None
         self.initWidget()
         self.main_root.mainloop()
 
@@ -67,20 +68,24 @@ class App():
             print("No file selected")
             return
         data_selected = os.path.join(os.path.splitext(Path(self.selected_file).name)[0],self.variablesDropdown.get())
-        print(data_selected)
         if os.path.isdir(data_selected):
             print("file found")
             
-            self.displayGif()
+            self.displayGif(None)
         else:
             self.ElevationSlider.grid_remove()
             print("file not found generating gif")
-            #GifGenerator.startGeneratingGif(self.selected_file,data_selected)
+            if self.gif_generator is None:
+                self.gif_generator = GIFGenerator(self.selected_file, self.variablesDropdown.get())
+                self.gif_generator.startGeneratingGifs()
 
     def displayGif(self,_):
         satellite = os.path.splitext(Path(self.selected_file).name)[0]
         elevation = round(self.ElevationSlider.get())
-        gifPath = os.path.join(satellite,self.variablesDropdown.get(),f"elevation-of-{elevation}.0.gif")
+        if self.gif_generator is not None:
+            self.gif_generator.setPreferedlevel(elevation)
+
+        gifPath = os.path.join(satellite,self.variablesDropdown.get(),f"{elevation}.0.gif")
 
         if hasattr(self, "gif_widget"):
             self.gif_widget.load(gifPath, keep_position=True)   # ✅ garde la même frame

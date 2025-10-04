@@ -23,14 +23,18 @@ class ImageGenerator:
     def __init__(self, method=ImageGeneratorMethod.LINEAR):
         self.method = method;
 
-    def generateFromMatrix(self, matrix, size: Tuple[int, int]) -> Image.Image:
-        minimum_value = matrix[0][0]
-        maximum_value = matrix[0][0]
-        for row in matrix:
-            for value in row:
-                value = self.method.transform(value)
-                minimum_value = min(minimum_value, value)
-                maximum_value = max(maximum_value, value)
+    def generateFromMatrix(self, matrix, size: Tuple[int, int], minimum_value=None, maximum_value=None) -> Image.Image:
+        if minimum_value is None or maximum_value is None:
+            minimum_value = matrix[0][0]
+            maximum_value = matrix[0][0]
+            for row in matrix:
+                for value in row:
+                    value = self.method.transform(value)
+                    minimum_value = min(minimum_value, value)
+                    maximum_value = max(maximum_value, value)
+        else:
+            minimum_value = self.method.transform(minimum_value)
+            maximum_value = self.method.transform(maximum_value)
 
         image = Image.new("L", size)
         for i, row in enumerate(matrix):

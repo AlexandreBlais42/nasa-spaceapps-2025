@@ -24,5 +24,4 @@ for ind_elev, elevation in tqdm(enumerate(ds.variables["lev"][:])) :
         #image.save("test"+str(i)+".png")
         images.append(image)
 
-    images[0].save("test" + str(elevation) + '.gif', save_all=True, append_images=images)
-
+images[0].save("test" + str(elevation) + '.gif', save_all=True, append_images=images, loop=0)

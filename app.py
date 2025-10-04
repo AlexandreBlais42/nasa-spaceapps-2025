@@ -13,8 +13,8 @@ class App():
         self.main_root = root
         self.main_root.bind('<Escape>', lambda e: self._escape() if hasattr(self, "_escape") else None)
 
-        w = self.main_root.winfo_screenwidth() // 5
-        h = self.main_root.winfo_screenheight() // 5
+        w = self.main_root.winfo_screenwidth() // 2
+        h = self.main_root.winfo_screenheight() // 2
         self.main_root.geometry(f"{w}x{h}")
 
         self.gif_generator = None
@@ -70,11 +70,16 @@ class App():
             self.generateGif.configure(text=text, state="disabled")
             self.variablesDropdown.configure(state="disabled")
             self.ElevationSlider.grid_remove()
+            print("poopop")
             if hasattr(self, "gif_widget"):
                 try:
                     self.gif_widget.load("loading.gif", keep_position=False)
                 except Exception:
                     pass
+            else :
+                self._last_key = None
+                self.gif_widget = self.GifPlayer(self.gifFrame, gif_path="loading.gif", delay=150, text="")
+                self.gif_widget.grid(row=0, column=0, padx=5, pady=5)
         else:
             self._generating = False
             self.generateGif.configure(text="Generate", state="normal")

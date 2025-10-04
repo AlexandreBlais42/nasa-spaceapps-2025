@@ -33,17 +33,19 @@ class GIFGenerator:
         #Verification of lev layers
         dimensions = self.dataset.variables[self.variable].dimensions
         self.haslevels = True
+        if "lev" not in dimensions:
+            self.levels = [1]
         if "lev" not in dimensions :
             self.levels = [1.0]
             self.haslevels = False
-        else :
+        else:
             self.levels = self.dataset.variables["lev"][:]
         self.levels_to_generate: Set[int] = set(range(len(self.levels)))
         self.prefered_level = 0
         self.times = self.dataset.variables["time"]
 
         self.data_matrix = self.dataset.variables[self.variable][:]
-        
+
         self.data_maximum = self.data_matrix.max()
         self.data_minimum = self.data_matrix.min()
         self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC,color=pall)
@@ -61,9 +63,9 @@ class GIFGenerator:
         self.levels_to_generate.remove(level_index)
         images = []
         for i in range(len(self.times)):
-            if self.haslevels :
+            if self.haslevels:
                 matrix = self.data_matrix[i, level_index, :, :]
-            else :
+            else:
                 matrix = self.data_matrix[i, :, :]
             image = self.image_generator.generateFromMatrix(matrix, self.data_maximum, self.data_minimum)
             images.append(image)
@@ -75,5 +77,5 @@ class GIFGenerator:
 
 if __name__ == "__main__":
     gif_generator = GIFGenerator("MERRA-2.nc4", "O3")
-    gif_generator.startGeneratingGifs();
+    gif_generator.startGeneratingGifs()
     sleep(10)

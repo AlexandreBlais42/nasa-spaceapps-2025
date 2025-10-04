@@ -11,8 +11,8 @@ d = np.array([0.00, 0.33, 0.67])
 def create_palette(a: np.array, b: np.array, c: np.array, d: np.array):
     step = 1/256
     pall = [0] * 256
-    for t in range(0,256):
-        pa = (palette((t*step),a,b,c,d) * 256).astype(np.uint8)
+    for t in range(0, 256):
+        pa = (palette((t*step), a, b, c, d) * 256).astype(np.uint8)
         pall[t] = pa
 
     def flatten(xss):

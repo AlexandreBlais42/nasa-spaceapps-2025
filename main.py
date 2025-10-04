@@ -22,12 +22,12 @@ b = np.array([0.50, 0.50, 0.50])
 c = np.array([1.0, 1.0, 1.0])
 d = np.array([0.00, 0.33, 0.67])
 
-pall = color.create_palette(a,b,c,d)
+pall = color.create_palette(a, b, c, d)
 
 for ind_elev, elevation in tqdm(enumerate(ds.variables[constant_value][:])) :
     images = []
     for ind_time, time in enumerate(ds.variables[dependant_value][:]) :
-        image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC,color=pall)
+        image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
         matrix = pseudomatrix[ind_time, ind_elev, :, :]
         image = image_generator.generateFromMatrix(matrix, max, min)
         images.append(image)

@@ -10,6 +10,7 @@ from PIL import Image, ImageTk, ImageSequence
 
 class App():
     def __init__(self, root):
+    def __init__(self, root):
         self.main_root = root
         self.main_root.bind('<Escape>', lambda e: self._escape() if hasattr(self, "_escape") else None)
 

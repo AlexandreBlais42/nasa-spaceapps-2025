@@ -37,7 +37,6 @@ class ImageGenerator:
             for j, value in enumerate(row):
                 value = self.method.transform(value)
                 value = (value - minimum_value) / (maximum_value - minimum_value) * 255
-                print(value)
                 image.putpixel((i, j), int(value))
 
         return image

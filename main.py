@@ -21,7 +21,6 @@ for ind_elev, elevation in tqdm(enumerate(ds.variables[constant_value][:])) :
         image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC)
         matrix = pseudomatrix[ind_time, ind_elev, :, :]
         image = image_generator.generateFromMatrix(matrix, max, min)
-        #image.save("test"+str(i)+".png")
         images.append(image)
     Path(satellite + '/' + analysed_stuff).mkdir(parents=True, exist_ok=True)
     images[0].save(satellite +'/' + analysed_stuff + "/" + str(elevation) + '.gif', save_all=True, append_images=images, loop=0)

@@ -81,7 +81,7 @@ class App():
 
     def displayGif(self,_):
         satellite = os.path.splitext(Path(self.selected_file).name)[0]
-        elevation = round(self.ElevationSlider.get())
+        elevation = int(np.ceil(self.ElevationSlider.get()))
         if self.gif_generator is not None:
             self.gif_generator.setPreferedlevel(elevation)
 
@@ -102,11 +102,12 @@ class App():
             print("file found")
             nb_gif = len(os.listdir(data_selected))
             self.ElevationSlider.configure(from_=1, to=nb_gif, number_of_steps=nb_gif) 
+            self.displayGif(None)
             self.ElevationSlider.grid()
         else:
             self.ElevationSlider.grid_remove()
             #show no gif 
-
+            self.gif_widget.load("loading.gif", keep_position=True)
 
     class GifPlayer(ctk.CTkLabel):
         def __init__(self, master, gif_path, delay=150, *args, **kwargs):

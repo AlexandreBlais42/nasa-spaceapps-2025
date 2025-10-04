@@ -2,11 +2,20 @@ from threading import Thread
 from typing import Set
 from pathlib import Path
 from time import sleep
+import numpy as np
+import color
 
 import netCDF4 as nc
 
 from ImageGenerator import ImageGenerator, ImageGeneratorMethod
 
+
+a = np.array([0.50, 0.50, 0.50])
+b = np.array([0.50, 0.50, 0.50])
+c = np.array([1.00, 1.00, 1.00])
+d = np.array([0.00, 0.33, 0.67])
+
+pall = color.create_palette(a, b, c, d)
 
 class GIFGenerator:
     def __init__(self, filepath: str, variable: str):
@@ -17,7 +26,7 @@ class GIFGenerator:
         self.prefered_level = level
 
     def startGeneratingGifs(self):
-        thread = Thread(target=self.generateGifs, args=(),)
+        thread = Thread(target=self.generateGifs, args=(), )
         thread.start()
 
     def generateGifs(self):
@@ -26,20 +35,22 @@ class GIFGenerator:
         #Verification of lev layers
         dimensions = self.dataset.variables[self.variable].dimensions
         self.haslevels = True
-        if "lev" not in dimensions :
+        if "lev" not in dimensions:
             self.levels = [1]
+        if "lev" not in dimensions :
+            self.levels = [1.0]
             self.haslevels = False
-        else :
+        else:
             self.levels = self.dataset.variables["lev"][:]
         self.levels_to_generate: Set[int] = set(range(len(self.levels)))
         self.prefered_level = 0
         self.times = self.dataset.variables["time"]
 
         self.data_matrix = self.dataset.variables[self.variable][:]
-        
+
         self.data_maximum = self.data_matrix.max()
         self.data_minimum = self.data_matrix.min()
-        self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC)
+        self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
         self.satellite_name = Path(self.filepath).stem
         self.dirpath = f"{self.satellite_name}/{self.variable}/"
 
@@ -54,9 +65,9 @@ class GIFGenerator:
         self.levels_to_generate.remove(level_index)
         images = []
         for i in range(len(self.times)):
-            if self.haslevels :
+            if self.haslevels:
                 matrix = self.data_matrix[i, level_index, :, :]
-            else :
+            else:
                 matrix = self.data_matrix[i, :, :]
             image = self.image_generator.generateFromMatrix(matrix, self.data_maximum, self.data_minimum)
             images.append(image)
@@ -68,5 +79,5 @@ class GIFGenerator:
 
 if __name__ == "__main__":
     gif_generator = GIFGenerator("MERRA-2.nc4", "O3")
-    gif_generator.startGeneratingGifs();
+    gif_generator.startGeneratingGifs()
     sleep(10)

@@ -1,7 +1,6 @@
 from enum import Enum
-from typing import Tuple
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 
 class ImageGeneratorMethod(Enum):
     LINEAR = 0
@@ -20,7 +19,7 @@ class ImageGeneratorMethod(Enum):
 
 
 class ImageGenerator:
-    def __init__(self, method=ImageGeneratorMethod.LINEAR,color=np.array):
+    def __init__(self, method=ImageGeneratorMethod.LINEAR, color=np.array):
         self.method = method
         self.color = color
 
@@ -32,11 +31,11 @@ class ImageGenerator:
         minimum_value = self.method.transform(minimum_value)
         maximum_value = self.method.transform(maximum_value)
 
-        matrix = 1- ( 255 * self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value)
+        matrix = 1 - (255 * self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value)
         image_temp = Image.fromarray(matrix.astype(np.uint8))
-        p_img = Image.new('P',(1,1))
+        p_img = Image.new('P', (1, 1))
         p_img.putpalette(self.color)
-        return image_temp.quantize(palette=p_img,dither=0)
+        return ImageOps.flip(image_temp.quantize(palette=p_img, dither=0))
 
 
 if __name__ == "__main__":

@@ -103,10 +103,7 @@ class App():
             self.gif_widget.load(gifPath, keep_position=True)
         else:
             self.gif_widget = self.GifPlayer(self.gifFrame, gif_path=gifPath, delay=150, text="")
-            self.gif_widget.grid(row=0, column=0, padx=5, pady=5)
-
-
-        
+            self.gif_widget.grid(row=0, column=0, padx=5, pady=5)  
     
     def changeSlider(self, _):
         if self.selected_file is None:
@@ -121,12 +118,14 @@ class App():
             nb_gif = len(files)
 
             if nb_gif == 0:
+                self.generateGif.grid()
                 self.ElevationSlider.grid_remove()
                 if hasattr(self, "gif_widget"):
-                    self._last_key = None    # force un futur reload
+                    self._last_key = None
                     self.gif_widget.load("loading.gif", keep_position=True)
                 return
 
+            self.generateGif.grid_remove()
             if nb_gif == 1:
                 self.ElevationSlider.grid_remove()
                 if hasattr(self, "gif_widget"):
@@ -147,9 +146,6 @@ class App():
             if hasattr(self, "gif_widget"):
                 self._last_key = None
                 self.gif_widget.load("loading.gif", keep_position=True)
-
-
-
 
     class GifPlayer(ctk.CTkLabel):
         def __init__(self, master, gif_path, delay=150, *args, **kwargs):

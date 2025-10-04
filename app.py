@@ -8,7 +8,7 @@ import os
 from PIL import Image, ImageTk, ImageSequence
 
 class App():
-    def __init__(self,root):
+    def __init__(self, root):
         self.main_root = root
         self.main_root.bind('<Escape>', lambda e: self._escape())
 
@@ -22,24 +22,24 @@ class App():
 
     def initWidget(self):
         self.paramsFrame = ctk.CTkFrame(self.main_root, corner_radius=10, border_width=1, border_color="grey")
-        self.paramsFrame.grid(row=0,column=0,padx=5,pady=5)
+        self.paramsFrame.grid(row=0, column=0, padx=5, pady=5)
         self.gifFrame = ctk.CTkFrame(self.main_root, corner_radius=10, border_width=1, border_color="grey")
-        self.gifFrame.grid(row =0,column =1,padx=5,pady=5)
+        self.gifFrame.grid(row =0, column =1, padx=5, pady=5)
 
-        self.ElevationSlider = ctk.CTkSlider(self.gifFrame, command=self.displayGif,orientation="vertical")
+        self.ElevationSlider = ctk.CTkSlider(self.gifFrame, command=self.displayGif, orientation="vertical")
 
         self.ElevationSlider.grid(row=0, column=1, padx=5, pady=5, sticky="sn")
         self.ElevationSlider.grid_remove()
 
-        self.generateGif = ctk.CTkButton(self.paramsFrame,text="generate",command=self.verifyGifGeneration)
-        self.generateGif.grid(row=1,column=0,padx=5,pady=5)
+        self.generateGif = ctk.CTkButton(self.paramsFrame, text="generate", command=self.verifyGifGeneration)
+        self.generateGif.grid(row=1, column=0, padx=5, pady=5)
 
         self.selected_file = None
-        self.fileSelection = ctk.CTkButton(self.paramsFrame,text="select a file",command=self.selectFile)
-        self.fileSelection.grid(row=2,column=0,padx=5,pady=5)
+        self.fileSelection = ctk.CTkButton(self.paramsFrame, text="select a file", command=self.selectFile)
+        self.fileSelection.grid(row=2, column=0, padx=5, pady=5)
 
-        self.variablesDropdown = ctk.CTkOptionMenu(self.paramsFrame, values=["no file"],command=self.changeSlider)
-        self.variablesDropdown.grid(row=0,column=0,padx=5,pady=5)
+        self.variablesDropdown = ctk.CTkOptionMenu(self.paramsFrame, values=["no file"], command=self.changeSlider)
+        self.variablesDropdown.grid(row=0, column=0, padx=5, pady=5)
 
     def getValues(self)->list:
         if self.selected_file == None: return []
@@ -68,7 +68,7 @@ class App():
         if self.selected_file == None:
             print("No file selected")
             return
-        data_selected = os.path.join(os.path.splitext(Path(self.selected_file).name)[0],self.variablesDropdown.get())
+        data_selected = os.path.join(os.path.splitext(Path(self.selected_file).name)[0], self.variablesDropdown.get())
         if os.path.isdir(data_selected):
             print("file found")
             self.ElevationSlider.grid()

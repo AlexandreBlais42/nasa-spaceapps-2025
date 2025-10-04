@@ -15,8 +15,8 @@ d = np.array([0.00, 0.33, 0.67])
 
 step = 1/256
 pall = [0] * 256
-for t in range(0,256):
-    pa = (palette((t*step),a,b,c,d) * 256).astype(np.uint8)
+for t in range(0, 256):
+    pa = (palette((t*step), a, b, c, d) * 256).astype(np.uint8)
     pall[t] = pa
 
 def flatten(xss):
@@ -39,7 +39,7 @@ ind_elev = 41
 elevation = ds.variables[constant_value][ind_elev]
 images = []
 for ind_time, time in enumerate(ds.variables[dependant_value][:]) :
-    image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC,color=pall)
+    image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
     matrix = pseudomatrix[ind_time, ind_elev, :, :]
     image = image_generator.generateFromMatrix(matrix, max, min)
     #image.save("test"+str(i)+".png")

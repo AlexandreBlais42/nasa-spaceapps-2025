@@ -8,11 +8,21 @@ ds = nc.Dataset(file_path)
 #print(ds.variables["DELP"])
 #print(ds.variables["O3"])
 #print(ds.variables["PS"])
-matrix = ds.variables["CO"][0,0,:,:]
+
 
 from ImageGenerator import ImageGenerator, ImageGeneratorMethod
 
+print(ds.variables["time"][:])
+#exit(0)
+
+images = []
+for i, time in enumerate(ds.variables["time"][:]) :
+    IG = image_generator = ImageGenerator()
+    matrix = ds.variables["CO"][i,0,:,:]
+    image = image_generator.generateFromMatrix(matrix, matrix.shape)
+    #image.save("test"+str(i)+".png")
+    images.append(image)
+
+images[0].save('test.gif', save_all=True, append_images=images)
+
 # data[:,:,0,0]
-IG = image_generator = ImageGenerator()
-image = image_generator.generateFromMatrix(matrix, matrix.shape)
-image.save("test.png")

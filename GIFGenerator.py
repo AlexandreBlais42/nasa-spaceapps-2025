@@ -27,7 +27,7 @@ class GIFGenerator:
         dimensions = self.dataset.variables[self.variable].dimensions
         self.haslevels = True
         if "lev" not in dimensions :
-            self.levels = [1]
+            self.levels = [1.0]
             self.haslevels = False
         else :
             self.levels = self.dataset.variables["lev"][:]

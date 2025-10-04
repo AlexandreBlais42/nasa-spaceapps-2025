@@ -5,10 +5,17 @@ from pathlib import Path
 import color
 import numpy as np
 
-file_path = 'MERRA-2.nc4'
+file_path = 'MERRA2-DATA/MERRA2_100.tavgM_2d_chm_Nx.198001.nc4'
 ds = nc.Dataset(file_path)
 
-satellite = "MERRA-2"
+satellite = "MERRA2_monthly_mean"
+print(ds)
+print(ds.variables.keys())
+print(ds.variables["LWI"])
+
+
+exit(0)
+
 analysed_stuff = "O3"
 constant_value = "lev" # NEED TO CHANGE INDEXES :(
 dependant_value = "time" # NEED T CHANGE GIF NAME

@@ -2,11 +2,18 @@ from threading import Thread
 from typing import Set
 from pathlib import Path
 from time import sleep
+import numpy as np
+import color
 
 import netCDF4 as nc
 
 from ImageGenerator import ImageGenerator, ImageGeneratorMethod
+a = np.array([0.5, 0.5, 0.5])
+b = np.array([0.50, 0.50, 0.50])
+c = np.array([1.0, 1.0, 1.0])
+d = np.array([0.00, 0.33, 0.67])
 
+pall = color.create_palette(a,b,c,d)
 
 class GIFGenerator:
     def __init__(self, filepath: str, variable: str):
@@ -39,7 +46,7 @@ class GIFGenerator:
         
         self.data_maximum = self.data_matrix.max()
         self.data_minimum = self.data_matrix.min()
-        self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC)
+        self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC,color=pall)
         self.satellite_name = Path(self.filepath).stem
         self.dirpath = f"{self.satellite_name}/{self.variable}/"
 

@@ -1,8 +1,9 @@
 import customtkinter as ctk
-import ImageGenerator as IG
+#import GifGenerator
 import netCDF4 as nc
 from tkinter import filedialog
 from pathlib import Path
+import os
 
 class App():
     def __init__(self,root):
@@ -12,7 +13,7 @@ class App():
         w = self.main_root.winfo_screenwidth()
         h = self.main_root.winfo_screenheight()
         self.main_root.geometry(f"{w}x{h}")
-        self.main_root.after(0, lambda: self.main_root.state("zoomed"))
+        #self.main_root.after(0, lambda: self.main_root.state("zoomed"))
         self.initWidget()
         self.main_root.mainloop()
 
@@ -22,7 +23,7 @@ class App():
         self.gifFrame = ctk.CTkFrame(self.main_root, corner_radius=10, border_width=1, border_color="grey")
         self.gifFrame.grid(row =0,column =1,padx=5,pady=5)
 
-        self.generateGif = ctk.CTkButton(self.paramsFrame,text="generate")
+        self.generateGif = ctk.CTkButton(self.paramsFrame,text="generate",command=self.verifyGifGeneration)
         self.generateGif.grid(row=1,column=0,padx=5,pady=5)
 
         self.selected_file = None
@@ -48,8 +49,22 @@ class App():
         filename = Path(self.selected_file).name
         self.fileSelection.configure(text=filename)
         print(self.selected_file)
-        
 
+    def verifyGifGeneration(self):
+        if self.selected_file == None :
+            print("No file selected")
+            return
+        data_selected = os.path.join(os.path.splitext(Path(self.selected_file).name)[0],self.variablesDropdown.get())
+        print(data_selected)
+        if os.path.isdir(data_selected):
+            print("file found")
+            self.displayGif()
+        else:
+            print("file not found generating gif")
+            #GifGenerator.startGeneratingGif(self.selected_file,data_selected)
+
+    def displayGif(self):
+        pass
 
 
 if __name__ == "__main__":

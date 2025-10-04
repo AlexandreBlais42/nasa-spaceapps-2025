@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Tuple
 import numpy as np
 from PIL import Image
 
@@ -36,7 +35,7 @@ class ImageGenerator:
         image_temp = Image.fromarray(matrix.astype(np.uint8))
         p_img = Image.new('P',(1,1))
         p_img.putpalette(self.color)
-        return image_temp.quantize(palette=p_img,dither=0)
+        return image_temp.quantize(palette=p_img, dither=0)
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ class App():
     def __init__(self,root):
         self.main_root = root
         self.main_root.bind('<Escape>', lambda e: self._escape())
-        
+
         w = self.main_root.winfo_screenwidth()/5
         h = self.main_root.winfo_screenheight()/5
         self.main_root.geometry(f"{w}x{h}")
@@ -37,20 +37,20 @@ class App():
         self.selected_file = None
         self.fileSelection = ctk.CTkButton(self.paramsFrame,text="select a file",command=self.selectFile)
         self.fileSelection.grid(row=2,column=0,padx=5,pady=5)
-        
+
         self.variablesDropdown = ctk.CTkOptionMenu(self.paramsFrame, values=["no file"],command=self.changeSlider)
         self.variablesDropdown.grid(row=0,column=0,padx=5,pady=5)
 
     def getValues(self)->list:
-        if self.selected_file == None : return []
+        if self.selected_file == None: return []
         goodlist = []
         ds = nc.Dataset(self.selected_file)
-        for v in ds.variables.keys() :
+        for v in ds.variables.keys():
             list = ds.variables[str(v)].dimensions
-            if "time" in list and "lat" in list and "lon"in list :
+            if "time" in list and "lat" in list and "lon"in list:
                 goodlist.append(v)
         return goodlist
-    
+
     def selectFile(self):
         self.selected_file = filedialog.askopenfilename(
             title="Sélectionner un fichier",
@@ -58,19 +58,19 @@ class App():
         values = self.getValues()
         self.variablesDropdown.set(values[0])
         self.variablesDropdown.configure(values=self.getValues())
-    
+
         filename = Path(self.selected_file).name
         self.fileSelection.configure(text=filename)
         print(self.selected_file)
 
     def verifyGifGeneration(self):
-        if self.selected_file == None :
+        if self.selected_file == None:
             print("No file selected")
             return
         data_selected = os.path.join(os.path.splitext(Path(self.selected_file).name)[0],self.variablesDropdown.get())
         if os.path.isdir(data_selected):
             print("file found")
-            
+
             self.displayGif(None)
         else:
             self.ElevationSlider.grid_remove()
@@ -93,20 +93,20 @@ class App():
             self.gif_widget = self.GifPlayer(self.gifFrame, gif_path=gifPath, delay=150, text="")
             self.gif_widget.grid(row=0, column=0, padx=5, pady=5)
 
-        
-    
+
+
     def changeSlider(self,_):
-        if self.selected_file == None : return
+        if self.selected_file == None: return
         data_selected = os.path.join(os.path.splitext(Path(self.selected_file).name)[0],self.variablesDropdown.get())
         if os.path.isdir(data_selected):
             print("file found")
             nb_gif = len(os.listdir(data_selected))
-            self.ElevationSlider.configure(from_=1, to=nb_gif, number_of_steps=nb_gif) 
+            self.ElevationSlider.configure(from_=1, to=nb_gif, number_of_steps=nb_gif)
             self.displayGif(None)
             self.ElevationSlider.grid()
         else:
             self.ElevationSlider.grid_remove()
-            #show no gif 
+            #show no gif
             self.gif_widget.load("loading.gif", keep_position=True)
 
     class GifPlayer(ctk.CTkLabel):
@@ -116,7 +116,7 @@ class App():
             self._after_id = None
             self.frames = []
             self.durations = []
-            self.index = 0 
+            self.index = 0
             self._last_ratio = 0.0
             self.load(gif_path, keep_position=False)
 

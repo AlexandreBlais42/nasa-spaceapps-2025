@@ -32,7 +32,7 @@ class GIFGenerator:
         self.data_maximum = self.data_matrix.max()
         self.data_minimum = self.data_matrix.min()
         self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC)
-        self.satellite_name = self.filepath.split(".")[0]
+        self.satellite_name = Path(self.filepath).stem
         self.dirpath = f"{self.satellite_name}/{self.variable}/"
 
         while self.levels_to_generate:

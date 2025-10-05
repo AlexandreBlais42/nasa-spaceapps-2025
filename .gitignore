@@ -3,6 +3,8 @@
 *.gif
 MERRA-2
 test.py
+GEOSS*
+MERRA2*
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

@@ -7,6 +7,12 @@ from pathlib import Path
 import os
 from PIL import Image, ImageTk, ImageSequence
 
+colorPalette ={
+    "luminosity":[0.5,0.5,0.5],
+    "contrast":[0.5,0.5,0.5],
+    "phase":[0.5,0.5,0.5],
+    "colorRange":[0.5,0.5,0.5]
+}
 
 class App():
     def __init__(self, root):
@@ -17,6 +23,7 @@ class App():
         h = self.main_root.winfo_screenheight() // 2
         self.main_root.geometry(f"{w}x{h}")
 
+        self.main_root.state("zoomed")
         self.gif_generator = None
         self._generating = False
         self._last_key = None
@@ -26,6 +33,9 @@ class App():
         self._poll_loops = 0
 
         self.initWidget()
+        #background 
+        self.background = self.set_background(frame= self.main_root,image_path="bg2.webp")
+        self.main_root.bind("<Configure>",self._on_configure_gate)
         self.main_root.mainloop()
 
     # ---------------- UI init ----------------
@@ -35,11 +45,37 @@ class App():
 
         self.gifFrame = ctk.CTkFrame(self.main_root, corner_radius=10, border_width=1, border_color="grey")
         self.gifFrame.grid(row=0, column=1, padx=5, pady=5)
+        
+        #slider
+        self.elevatorFrame = ctk.CTkFrame(self.gifFrame,border_width=1,corner_radius=5)
+        self.elevatorFrame.grid(row=0,column=1,padx=5,pady=5)
+        self.elevationTitle = ctk.CTkLabel(self.elevatorFrame,text="Elevation")
+        self.elevationTitle.grid(row=2,column=0,padx=5,pady=5)
+        self.ElevationSlider = ctk.CTkSlider(self.elevatorFrame, command=self.displayGif, orientation="vertical")
+        self.ElevationSlider.grid(row=0, column=0, padx=5, pady=5, sticky="sn")
+        self.elevationLabel = ctk.CTkLabel(self.elevatorFrame,text = self.ElevationSlider._value)
+        self.elevationLabel.grid(row=1,column=0,padx=5,pady=5)
+        self.elevatorFrame.grid_remove()
 
-        self.ElevationSlider = ctk.CTkSlider(self.gifFrame, command=self.displayGif, orientation="vertical")
-        self.ElevationSlider.grid(row=0, column=1, padx=5, pady=5, sticky="sn")
-        self.ElevationSlider.grid_remove()
+        self.djTable = []
+        self.djTableFrame = ctk.CTkFrame(self.gifFrame,border_width=1)
+        self.djTableFrame.grid(row=0,column=2,padx=5,pady=5)
 
+       
+        #luminosity
+        self.luminosityFrame,self.luminositySliders = self.createDJTable(colorPalette['luminosity'],"luminosity")
+        self.luminosityFrame.grid(row=0,column=0,padx=5,pady=5)
+        #contrast
+        self.contrastFrame,self.contrastSliders = self.createDJTable(colorPalette['contrast'],"contrast")
+        self.contrastFrame.grid(row=0,column=1,padx=5,pady=5)
+        #phase
+        self.phaseFrame,self.phaseSliders = self.createDJTable(colorPalette['phase'],"phase")
+        self.phaseFrame.grid(row=0,column=2,padx=5,pady=5)
+        #color range
+        self.colorRangeFrame,self.colorRangeSliders = self.createDJTable(colorPalette['colorRange'],"color range")
+        self.colorRangeFrame.grid(row=0,column=3,padx=5,pady=5)
+
+        #gif button
         self.generateGif = ctk.CTkButton(self.paramsFrame, text="Generate", command=self.verifyGifGeneration)
         self.generateGif.grid(row=1, column=0, padx=5, pady=5)
         self.generateGif.grid_remove()
@@ -52,6 +88,113 @@ class App():
         self.variablesDropdown.grid(row=0, column=0, padx=5, pady=5)
 
     # ---------------- Small helpers ----------------
+    def _fit_window_to_content(self, content_widget, marginx=-100,marginy=-50, include_padding=True, thresh=6):
+        if getattr(self, "_sizing_internally", False):
+            return
+
+        try:
+            is_zoomed = (str(self.root.state()) == "zoomed")  # Windows
+        except Exception:
+            is_zoomed = False
+        is_full = bool(self.main_root.attributes("-fullscreen")) if hasattr(self.main_root, "attributes") else False
+        if is_zoomed or is_full:
+            return
+        
+        self.main_root.update_idletasks()
+        target_w = content_widget.winfo_reqwidth()
+        target_h = content_widget.winfo_reqheight()
+
+        if include_padding:
+            try:
+                gi = content_widget.grid_info()
+                if gi:
+                    padx = gi.get("padx") or 0
+                    pady = gi.get("pady") or 0
+                    def _to_int_sum(v):
+                        if isinstance(v, tuple):
+                            return int(v[0]) + int(v[1])
+                        return int(v)
+                    target_w += _to_int_sum(padx)
+                    target_h += _to_int_sum(pady)
+            except Exception:
+                pass
+
+        target_w += int(marginx)
+        target_h += int(marginy)
+
+        cur_w = self.main_root.winfo_width()
+        cur_h = self.main_root.winfo_height()
+
+        if abs(target_w - cur_w) <= thresh and abs(target_h - cur_h) <= thresh:
+            return
+        self._sizing_internally = True
+        try:
+            x, y = self.main_root.winfo_x(), self.main_root.winfo_y()
+            self.main_root.geometry(f"{int(target_w)}x{int(target_h)}+{x}+{y}")
+        finally:
+            self.main_root.after(1, lambda: setattr(self, "_sizing_internally", False))
+
+    def _on_configure_gate(self,event=None):
+        win = self.main_root.winfo_toplevel()
+        if event is not None and event.widget is not win:
+            return
+        self._fit_window_to_content(self.main_root)
+
+    def set_background(self,frame, image_path, keep_aspect=True):
+        frame.update_idletasks()
+        W = max(1, frame.winfo_width())
+        H = max(1, frame.winfo_height())
+
+        pil = Image.open(image_path).convert("RGB")
+
+        def _fit_size(img, w, h):
+            if not keep_aspect:
+                return (w, h)
+            iw, ih = img.size
+            s = min(w/iw, h/ih) if iw and ih else 1
+            return (max(1, int(iw*s)), max(1, int(ih*s)))
+
+        size = _fit_size(pil, W, H)
+        bg_img = ctk.CTkImage(light_image=pil, dark_image=pil, size=size)
+        bg_lbl = ctk.CTkLabel(frame, text="", image=bg_img)
+        bg_lbl.place(relx=0, rely=0, relwidth=1, relheight=1)
+        bg_lbl.lower()
+        frame._bg_pil = pil
+        frame._bg_img = bg_img
+        frame._bg_lbl = bg_lbl
+        def _on_resize(_=None):
+            w = max(1, frame.winfo_width())
+            h = max(1, frame.winfo_height())
+            new_size = _fit_size(frame._bg_pil, w, h)
+            frame._bg_img.configure(size=new_size)
+
+        frame.bind("<Configure>", _on_resize)
+        return bg_lbl
+    
+    def getDJValues(self):
+        luminosity =self.getSliderVal(self.luminositySliders)
+        contrast = self.getSliderVal(self.contrastSliders)
+        phase = self.getSliderVal(self.phaseSliders)
+        colorRange =self.getSliderVal(self.colorRangeSliders)
+        return luminosity,contrast,phase,colorRange
+    
+    def getSliderVal(self,sliders):
+        val = [None,None,None]
+        for i,slider in enumerate(sliders):
+            val[i] = slider._value
+        return val
+
+    def createDJTable(self,vector,label,func =None):
+        frame = ctk.CTkFrame(self.djTableFrame)
+        label = ctk.CTkLabel(frame,text=label)
+        label.grid(row=1,column=0,padx=5,pady=5,sticky="ew",columnspan=3)
+        djTable = [None,None,None]
+        for i,val in enumerate(vector):
+            djTable[i] = ctk.CTkSlider(frame,orientation="vertical",from_=0,to=1)#,)
+            djTable[i].grid(row=0,column=i,padx=5,pady=5)
+            djTable[i].set(val)
+        return frame,djTable
+
     def _target_dir(self) -> str:
         var = self.variablesDropdown.get().split("/")[-1].strip()
         base = os.path.splitext(Path(self.selected_file).name)[0]
@@ -118,11 +261,12 @@ class App():
     # ---------------- Main actions ----------------
     def selectFile(self):
         self.selected_file = filedialog.askopenfilename(
-            title="Sélectionner un fichier",
-            filetypes=(("Fichiers NetCDF", "*.nc4;*.nc"), ("Tous les fichiers", "*.*"))
+            title="select file",
+            filetypes=(("NetCDF files", "*.nc4;*.nc"), ("all files", "*.*"))
         )
         if not self.selected_file:
             return
+
 
         values = self.getValues()
         if values:
@@ -134,15 +278,19 @@ class App():
 
         self.fileSelection.configure(text=Path(self.selected_file).name)
         self._last_key = None
+        
         self.changeSlider(None)
+        self._fit_window_to_content(self.main_root)
 
     def changeSlider(self, _):
         #if no file, remove slider from UI
-        if self.selected_file is None:
+        print(self.selected_file)
+        if self.selected_file is None or self.variablesDropdown.get() == "no var":
             self.variablesDropdown.configure(state="normal")
             self.generateGif.grid()
             self.generateGif.configure(text="Generate", state="normal")
-            self.ElevationSlider.grid_remove()
+            self.elevatorFrame.grid_remove()
+
             if hasattr(self, "gif_widget"):
                 self._last_key = None
                 try:
@@ -163,7 +311,7 @@ class App():
         #no gif, set UI
         if nb_gif == 0:
             self.variablesDropdown.configure(state="normal")
-            self.ElevationSlider.grid_remove()
+            self.elevatorFrame.grid_remove()
             self.generateGif.grid()
             self.generateGif.configure(text="Generate", state="normal")
             if hasattr(self, "gif_widget"):
@@ -178,7 +326,7 @@ class App():
         if nb_gif == 1:
             self.generateGif.grid_remove()
             self.variablesDropdown.configure(state="normal")
-            self.ElevationSlider.grid_remove()
+            self.elevatorFrame.grid_remove()
             first_path = os.path.join(target, "1.0.gif")
             if hasattr(self, "gif_widget"):
                 self._last_key = None
@@ -192,13 +340,16 @@ class App():
         # nb_gif > 1
         self.generateGif.grid_remove()
         self.variablesDropdown.configure(state="normal")
-        self.ElevationSlider.configure(from_=1, to=nb_gif, number_of_steps=nb_gif - 1)
+        self.ElevationSlider.configure(from_=nb_gif, to=1, number_of_steps=nb_gif-1)
         self.ElevationSlider.set(1)
         self._last_key = None
-        self.ElevationSlider.grid()
+        self.elevatorFrame.grid()
         self.displayGif(None)
 
     def verifyGifGeneration(self):
+        if self.variablesDropdown.get() == "no var":
+            print("no var")
+            return
         if self.selected_file is None:
             print("No file selected")
             return
@@ -353,7 +504,9 @@ class App():
         if self._last_key == key:
             return
         self._last_key = key
+        #change 
         
+        self.elevationLabel.configure(text=self.ElevationSlider.cget("from_")-elevation)
         #define prefered level
         if self.gif_generator is not None:
             try:

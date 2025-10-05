@@ -32,6 +32,7 @@ class GIFGenerator:
     def generateGifs(self):
         self.dataset = nc.Dataset(self.filepath)
 
+        
         #Verification of lev layers
         dimensions = self.dataset.variables[self.variable].dimensions
         self.haslevels = True

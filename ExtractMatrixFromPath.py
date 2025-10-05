@@ -16,7 +16,7 @@ def extractMatrix(satellite, folder, path, analysed_stuff) :
     paths = []
     if folder :
         directory = satellite+"_DATA"
-        for entry in os.scandir(directory):  
+        for entry in os.scandir(directory):
             if entry.is_file():
                 paths.append(entry.path)
         dss = []

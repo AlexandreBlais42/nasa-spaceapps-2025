@@ -29,7 +29,7 @@ class GIFGenerator:
     def startGeneratingGifs(self):
         thread = Thread(target=self.generateGifs, args=(), )
         thread.start()
-        
+
     def changePalette(dirpath, newPalette):
         for gif in os.listdir(dirpath):
             newGif = ImageGenerator.changeColor(dirpath+'/'+gif,newPalette)

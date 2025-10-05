@@ -4,6 +4,7 @@ from pathlib import Path
 from time import sleep
 import numpy as np
 import color
+import os
 
 import netCDF4 as nc
 
@@ -28,11 +29,15 @@ class GIFGenerator:
     def startGeneratingGifs(self):
         thread = Thread(target=self.generateGifs, args=(), )
         thread.start()
+        
+    def changePalette(dirpath, newPalette):
+        for gif in os.listdir(dirpath):
+            newGif = ImageGenerator.changeColor(dirpath+'/'+gif,newPalette)
+            newGif[0].save(dirpath+'/'+gif,save_all=True, append_images=newGif[1:], loop=0)
 
     def generateGifs(self):
         self.dataset = nc.Dataset(self.filepath)
 
-        
         #Verification of lev layers
         dimensions = self.dataset.variables[self.variable].dimensions
         self.haslevels = True
@@ -76,7 +81,7 @@ class GIFGenerator:
         filename = f"{self.levels[level_index]}.gif"
 
         Path(self.dirpath).mkdir(parents=True, exist_ok=True)
-        images[0].save(self.dirpath + filename, save_all=True, append_images=images, loop=0)
+        images[0].save(self.dirpath + filename, save_all=True, append_images=images[1:], loop=0)
 
 if __name__ == "__main__":
     gif_generator = GIFGenerator("MERRA-2.nc4", "O3")

@@ -1,6 +1,6 @@
 from enum import Enum
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageSequence
 
 class ImageGeneratorMethod(Enum):
     LINEAR = 0
@@ -61,7 +61,23 @@ class ImageGenerator:
         #SOBEL EST PAS FINI
 
         return sobel_matrix
+    
+    def changeColor(gif,newPalette):
+        gif = Image.open(gif)
+        frames = []
+        for frame in ImageSequence.Iterator(gif):
+            conv = frame.convert('RGB')
+            
+            p_img = Image.new('P',(1,1))
+            p_img.putpalette(newPalette)
+            frames.append(conv.quantize(palette=p_img,dither=0))
+            
+        return frames
 
+            
+            
+    
+        
 
     def generateFromMatrix(self, matrix: np.ndarray, minimum_value=None, maximum_value=None) -> Image.Image:
         if minimum_value is None or maximum_value is None:

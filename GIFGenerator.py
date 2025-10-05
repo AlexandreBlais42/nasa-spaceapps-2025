@@ -19,10 +19,9 @@ d = np.array([0.30, 0.20, 0.20])
 pall = color.create_palette(a, b, c, d)
 
 class GIFGenerator:
-    def __init__(self, filepath: str, variable: str,method =True):#true for linear
+    def __init__(self, filepath: str, variable: str):
         self.filepath = filepath
         self.variable = variable
-        self.method =method
     def setPreferedlevel(self, level: int):
         self.prefered_level = level
 
@@ -42,8 +41,6 @@ class GIFGenerator:
         dimensions = self.dataset.variables[self.variable].dimensions
         self.haslevels = True
         if "lev" not in dimensions:
-            self.levels = [1]
-        if "lev" not in dimensions:
             self.levels = [1.0]
             self.haslevels = False
         else:
@@ -57,10 +54,7 @@ class GIFGenerator:
         self.data_maximum = self.data_matrix.max()
         self.data_minimum = self.data_matrix.min()
 
-        if self.method:
-            self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LINEAR, color=pall)
-        else:
-            self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
+        self.image_generator = ImageGenerator(method=ImageGeneratorMethod.TEST, color=pall)
         self.satellite_name = Path(self.filepath).stem
         self.dirpath = f"{self.satellite_name}/{self.variable}/"
 

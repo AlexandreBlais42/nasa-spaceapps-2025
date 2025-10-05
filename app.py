@@ -11,7 +11,7 @@ from PIL import Image, ImageTk, ImageSequence
 class App():
     def __init__(self, root):
         self.main_root = root
-        self.main_root.bind('<Escape>', lambda e: self._escape() if hasattr(self, "_escape") else None)
+        self.main_root.bind('<Escape>', self._escape)
 
         w = self.main_root.winfo_screenwidth() // 2
         h = self.main_root.winfo_screenheight() // 2
@@ -368,6 +368,9 @@ class App():
         else:
             self.gif_widget = self.GifPlayer(self.gifFrame, gif_path=gifPath, delay=150, text="")
             self.gif_widget.grid(row=0, column=0, padx=5, pady=5)
+
+    def _escape(self,_):
+        pass
 
     # ---------------- GIF player ----------------
     class GifPlayer(ctk.CTkLabel):

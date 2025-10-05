@@ -87,8 +87,8 @@ class App():
         self.variablesDropdown = ctk.CTkOptionMenu(self.paramsFrame, values=["no file"], command=self.changeSlider)
         self.variablesDropdown.grid(row=0, column=0, padx=5, pady=5)
 
-        self.method = ctk.CTkCheckBox(self.paramsFrame,text="method")
-        self.method.grid(row=3,column=0,padx=5,pady=5)
+        #self.method = ctk.CTkCheckBox(self.paramsFrame,text="method")
+        #self.method.grid(row=3,column=0,padx=5,pady=5)
 
     # ---------------- Small helpers ----------------
     def _fit_window_to_content(self, content_widget, marginx=-100,marginy=-50, include_padding=True, thresh=6):
@@ -344,12 +344,13 @@ class App():
         #self.generateGif.grid_remove()
         self.variablesDropdown.configure(state="normal")
         self.ElevationSlider.configure(from_=nb_gif, to=0, number_of_steps=nb_gif)
-        self.ElevationSlider.set(1)
+        self.ElevationSlider.set(nb_gif)
         self._last_key = None
         self.elevatorFrame.grid()
         self.displayGif(None)
 
     def verifyGifGeneration(self):
+        print("iakfhoaidhasoidhasod")
         if self.variablesDropdown.get() == "no var":
             print("no var")
             return
@@ -369,11 +370,12 @@ class App():
         nb = self._count_gifs(target)
 
         #already ready
-        if nb > 0 and self._is_all_ready(nb):
+        print(nb)
+
+        if nb > 0:
             self._set_loading(False)
-            #self.generateGif.grid_remove()
             self._last_key = None
-            self._setup_slider_and_show_first(nb)
+            self._setup_slider_and_show_first(nb)                
             return
 
         #no gif
@@ -385,7 +387,7 @@ class App():
         if (self.gif_generator is None
             or getattr(self.gif_generator, "nc_path", None) != self.selected_file
             or getattr(self.gif_generator, "var", None) != var):
-            self.gif_generator = GIFGenerator(self.selected_file, var,method=self.method.get())
+            self.gif_generator = GIFGenerator(self.selected_file, var)
 
         #start gen
         self.gif_generator.startGeneratingGifs()

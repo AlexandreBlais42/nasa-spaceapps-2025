@@ -6,48 +6,45 @@ import color
 import numpy as np
 import os
 
-#file_path = 'MERRA2-DATA/MERRA2_100.tavgM_2d_chm_Nx.198001.nc4'
-paths = []
-directory = 'MERRA2-DATA'
-for entry in os.scandir(directory):  
-    if entry.is_file():  # check if it's a file
-        paths.append(entry.path)
-#print(paths)
-#print(len(paths))
+file_path = 'antarctica_ice_velocity_450m_v2.nc'
+#paths = []
+#directory = 'MERRA2-DATA'
+#for entry in os.scandir(directory):  
+#    if entry.is_file():
+#        paths.append(entry.path)
 
-dss = []
-for path in paths :
-    dss.append(nc.Dataset(path))
+ds = nc.Dataset(file_path)
 
-satellite = "MERRA2_monthly_mean"
-#print(dss[0])
-print(dss[0].variables.keys())
-#print(dss[0].variables["LWI"])
+def palette(  t:float,  a:np.array,  b:np.array,  c:np.array, d:np.array ):
+    return a + b*np.cos( 6.283185*(c*t+d) );
 
-analysed_stuff = "LWI"
-#constant_value = "lev" # NEED TO CHANGE INDEXES :(
-dependant_value = "time" # NEED T CHANGE GIF NAME
-max_list = [dss[v].variables[analysed_stuff][:].max() for v in range(len(dss))]
-min_list = [dss[v].variables[analysed_stuff][:].min() for v in range(len(dss))]
-
-max = max(max_list)
-min = min(min_list)
-
-a = np.array([0.5, 0.5, 0.5])
-b = np.array([0.50, 0.50, 0.50])
+a = np.array([0.4, 0.4, 0.4])
+b = np.array([0.6, 0.6, 0.6])
 c = np.array([1.0, 1.0, 1.0])
 d = np.array([0.00, 0.33, 0.67])
 
-pall = color.create_palette(a, b, c, d)
+step = 1/256
+pall = [0] * 256
+for t in range(0, 256):
+    pa = (palette((t*step), a, b, c, d) * 256).astype(np.uint8)
+    pall[t] = pa
 
-images = []
+def flatten(xss):
+    return [x for xs in xss for x in xs]
 
-for i in range(len(dss)):
-    pseudomatrix = dss[i].variables[analysed_stuff]
+pall = flatten(pall)
+
+print(ds)
+print(ds.variables.keys())
+#print(ds.variables["CNT"])
+#print(ds.groups["PRODUCT"].variables["carbonmonoxide_total_column_corrected"].dimensions)
+
+list = ["VX", "VY", "STDX", "STDY", "ERRX", "ERRY", "CNT"]
+
+for analysed_stuff in list :
+    matrix = ds.variables[analysed_stuff][:]
+    max = matrix.max()
+    min = matrix.min()
     image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
-    matrix = pseudomatrix[0, :, :]
     image = image_generator.generateFromMatrix(matrix, max, min)
-    images.append(image)
-    Path(satellite + '/' + analysed_stuff).mkdir(parents=True, exist_ok=True)
-    #str(1980+i//12) + str(f"{i%12:02d}")
-images[0].save(satellite +'/' + analysed_stuff + "/" + analysed_stuff + '.gif', save_all=True, append_images=images[1:], loop=0)
+    image.save(analysed_stuff + ".png")

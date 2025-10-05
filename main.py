@@ -6,14 +6,18 @@ import color
 import numpy as np
 import os
 
-file_path = 'antarctica_ice_velocity_450m_v2.nc'
-#paths = []
-#directory = 'MERRA2-DATA'
-#for entry in os.scandir(directory):  
-#    if entry.is_file():
-#        paths.append(entry.path)
+#file_path = 'antarctica_ice_velocity_450m_v2.nc'
 
-ds = nc.Dataset(file_path)
+satellite = "GEOSS"
+paths = []
+directory = 'GEOSS-DATA'
+for entry in os.scandir(directory):  
+    if entry.is_file():
+        paths.append(entry.path)
+
+dss = []
+for path in paths :
+    dss.append(nc.Dataset(path))
 
 def palette(  t:float,  a:np.array,  b:np.array,  c:np.array, d:np.array ):
     return a + b*np.cos( 6.283185*(c*t+d) );
@@ -34,17 +38,25 @@ def flatten(xss):
 
 pall = flatten(pall)
 
-print(ds)
-print(ds.variables.keys())
+#print(ds)
+#print(ds.variables.keys())
 #print(ds.variables["CNT"])
 #print(ds.groups["PRODUCT"].variables["carbonmonoxide_total_column_corrected"].dimensions)
 
 list = ["VX", "VY", "STDX", "STDY", "ERRX", "ERRY", "CNT"]
 
 for analysed_stuff in list :
-    matrix = ds.variables[analysed_stuff][:]
-    max = matrix.max()
-    min = matrix.min()
-    image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
-    image = image_generator.generateFromMatrix(matrix, max, min)
-    image.save(analysed_stuff + ".png")
+    max_list = [dss[v].variables[analysed_stuff][:].max() for v in range(len(dss))]
+    min_list = [dss[v].variables[analysed_stuff][:].min() for v in range(len(dss))]
+    max = max(max_list)
+    min = min(min_list)
+    images = []
+    for i in range(len(dss)):
+        pseudomatrix = dss[i].variables[analysed_stuff]
+        image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
+        matrix = pseudomatrix[:]
+        image = image_generator.generateFromMatrix(matrix, max, min)
+        images.append(image)
+        Path(satellite + '/' + analysed_stuff).mkdir(parents=True, exist_ok=True)
+        #str(1980+i//12) + str(f"{i%12:02d}")
+    images[0].save(satellite +'/' + analysed_stuff + '.gif', save_all=True, append_images=images[1:], loop=0)

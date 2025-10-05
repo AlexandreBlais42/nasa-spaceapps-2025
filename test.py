@@ -17,21 +17,10 @@ def colorbar(abcd):
     image.show()
     return image
 
-a = np.array([0.5, 0.5, 0.5])
+a = np.array([0.50, 0.50, 0.50])
 b = np.array([0.50, 0.50, 0.50])
-c = np.array([0.80, 0.80, 0.80])
-d = np.array([0.28, 0.61, 0.85])
+c = np.array([2.00, 1.00, 0.00])
+d = np.array([0.50, 0.20, 0.25])
+pall2 = color.create_palette(a, b, c, d)
 
-a = np.array([0.5, 0.5, 0.5])
-b = np.array([0.50, 0.50, 0.50])
-c = np.array([0.80, 0.80, 0.80])
-d = np.array([0.28, 0.61, 0.85])
-
-pall = color.create_palette(a,b,c,d)
-color.colorbar([a,b,c,d])
-
-# image.show()
-
-
-
-# GIFGenerator.changePalette("C:/Users/pouli/Documents/Nasa/nasa-spaceapps-2025/MERRA-2/O3",pall)
+GIFGenerator.changePalette("C:/Users/pouli/Documents/Nasa/nasa-spaceapps-2025/MERRA-2/AIRDENS",pall2)

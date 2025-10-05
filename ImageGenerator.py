@@ -1,6 +1,7 @@
 from enum import Enum
 import numpy as np
 from PIL import Image, ImageOps
+import math
 
 class ImageGeneratorMethod(Enum):
     LINEAR = 0
@@ -12,8 +13,9 @@ class ImageGeneratorMethod(Enum):
                 return value
 
             case ImageGeneratorMethod.LOGARITHMIC.value:
-                return np.log(value)
-
+                value = np.log(value)
+                return value
+            
             case _:
                 raise InvalidImageGeneratorMethodException
 

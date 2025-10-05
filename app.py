@@ -47,7 +47,7 @@ class App():
         self.gifFrame.grid(row=0, column=1, padx=5, pady=5)
         
         #slider
-        self.elevatorFrame = ctk.CTkFrame(self.gifFrame,border_width=1,corner_radius=2)
+        self.elevatorFrame = ctk.CTkFrame(self.gifFrame,border_width=1,corner_radius=5)
         self.elevatorFrame.grid(row=0,column=1,padx=5,pady=5)
         self.elevationTitle = ctk.CTkLabel(self.elevatorFrame,text="Elevation")
         self.elevationTitle.grid(row=2,column=0,padx=5,pady=5)
@@ -78,7 +78,7 @@ class App():
         #gif button
         self.generateGif = ctk.CTkButton(self.paramsFrame, text="Generate", command=self.verifyGifGeneration)
         self.generateGif.grid(row=1, column=0, padx=5, pady=5)
-        self.generateGif.grid_remove()
+        #self.generateGif.grid_remove()
 
         self.selected_file = None
         self.fileSelection = ctk.CTkButton(self.paramsFrame, text="Select a file", command=self.selectFile)
@@ -86,6 +86,9 @@ class App():
 
         self.variablesDropdown = ctk.CTkOptionMenu(self.paramsFrame, values=["no file"], command=self.changeSlider)
         self.variablesDropdown.grid(row=0, column=0, padx=5, pady=5)
+
+        self.method = ctk.CTkCheckBox(self.paramsFrame,text="method")
+        self.method.grid(row=3,column=0,padx=5,pady=5)
 
     # ---------------- Small helpers ----------------
     def _fit_window_to_content(self, content_widget, marginx=-100,marginy=-50, include_padding=True, thresh=6):
@@ -210,7 +213,7 @@ class App():
         if is_loading:
             self._generating = True
             self.generateGif.grid()
-            self.generateGif.configure(text=text, state="disabled")
+            #self.generateGif.configure(text=text, state="disabled")
             self.variablesDropdown.configure(state="disabled")
             self.ElevationSlider.grid_remove()
 
@@ -324,7 +327,7 @@ class App():
         
         #1 gif no slider
         if nb_gif == 1:
-            self.generateGif.grid_remove()
+            #self.generateGif.grid_remove()
             self.variablesDropdown.configure(state="normal")
             self.elevatorFrame.grid_remove()
             first_path = os.path.join(target, "1.0.gif")
@@ -338,9 +341,9 @@ class App():
             return
 
         # nb_gif > 1
-        self.generateGif.grid_remove()
+        #self.generateGif.grid_remove()
         self.variablesDropdown.configure(state="normal")
-        self.ElevationSlider.configure(from_=nb_gif, to=1, number_of_steps=nb_gif-1)
+        self.ElevationSlider.configure(from_=nb_gif, to=0, number_of_steps=nb_gif)
         self.ElevationSlider.set(1)
         self._last_key = None
         self.elevatorFrame.grid()
@@ -368,7 +371,7 @@ class App():
         #already ready
         if nb > 0 and self._is_all_ready(nb):
             self._set_loading(False)
-            self.generateGif.grid_remove()
+            #self.generateGif.grid_remove()
             self._last_key = None
             self._setup_slider_and_show_first(nb)
             return
@@ -382,7 +385,7 @@ class App():
         if (self.gif_generator is None
             or getattr(self.gif_generator, "nc_path", None) != self.selected_file
             or getattr(self.gif_generator, "var", None) != var):
-            self.gif_generator = GIFGenerator(self.selected_file, var)
+            self.gif_generator = GIFGenerator(self.selected_file, var,method=self.method.get())
 
         #start gen
         self.gif_generator.startGeneratingGifs()
@@ -423,7 +426,7 @@ class App():
         #ready to update UI
         if ready:
             self._set_loading(False)
-            self.generateGif.grid_remove()
+            #self.generateGif.grid_remove()
 
             current_var = self.variablesDropdown.get().split("/")[-1].strip()
             gen_var = getattr(self.gif_generator, "var", current_var)
@@ -479,8 +482,8 @@ class App():
             return
 
         # nb_gif > 1 setup slider
-        self.ElevationSlider.configure(from_=1, to=nb_gif, number_of_steps=nb_gif - 1)
-        self.ElevationSlider.set(1)
+        self.ElevationSlider.configure(from_=nb_gif, to=0, number_of_steps=nb_gif - 1)
+        self.ElevationSlider.set(nb_gif-1)
         self._last_key = None
         self.ElevationSlider.grid()
         #show gif
@@ -506,7 +509,7 @@ class App():
         self._last_key = key
         #change 
         
-        self.elevationLabel.configure(text=self.ElevationSlider.cget("from_")-elevation)
+        self.elevationLabel.configure(text=np.abs(self.ElevationSlider.cget("from_")-elevation))
         #define prefered level
         if self.gif_generator is not None:
             try:

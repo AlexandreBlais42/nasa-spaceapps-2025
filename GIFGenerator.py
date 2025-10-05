@@ -18,10 +18,10 @@ d = np.array([0.00, 0.33, 0.67])
 pall = color.create_palette(a, b, c, d)
 
 class GIFGenerator:
-    def __init__(self, filepath: str, variable: str):
+    def __init__(self, filepath: str, variable: str,method =True):#true for linear
         self.filepath = filepath
         self.variable = variable
-
+        self.method =method
     def setPreferedlevel(self, level: int):
         self.prefered_level = level
 
@@ -51,7 +51,11 @@ class GIFGenerator:
 
         self.data_maximum = self.data_matrix.max()
         self.data_minimum = self.data_matrix.min()
-        self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
+
+        if self.method:
+            self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LINEAR, color=pall)
+        else:
+            self.image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
         self.satellite_name = Path(self.filepath).stem
         self.dirpath = f"{self.satellite_name}/{self.variable}/"
 
@@ -79,6 +83,6 @@ class GIFGenerator:
         images[0].save(self.dirpath + filename, save_all=True, append_images=images, loop=0)
 
 if __name__ == "__main__":
-    gif_generator = GIFGenerator("MERRA-2.nc4", "O3")
+    gif_generator = GIFGenerator("MERRA-2.nc4", "AIRDENS")
     gif_generator.startGeneratingGifs()
     sleep(10)

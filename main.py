@@ -17,10 +17,12 @@ pseudomatrix = ds.variables[analysed_stuff]
 max = pseudomatrix[:].max()
 min = pseudomatrix[:].min()
 
+
 a = np.array([0.5, 0.5, 0.5])
 b = np.array([0.50, 0.50, 0.50])
-c = np.array([1.0, 1.0, 1.0])
-d = np.array([0.00, 0.33, 0.67])
+c = np.array([0.88, 0.88, 0.88])
+d = np.array([0.28, 0.61, 0.95])
+
 
 pall = color.create_palette(a,b,c,d)
 

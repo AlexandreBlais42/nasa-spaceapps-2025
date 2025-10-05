@@ -180,7 +180,7 @@ class App():
         contrast = np.array(self.getSliderVal(self.contrastSliders))
         phase = np.array(self.getSliderVal(self.phaseSliders))
         colorRange =np.array(self.getSliderVal(self.colorRangeSliders))
-        return luminosity,contrast,colorRange*6.283185,phase*6.283185
+        return luminosity,contrast,colorRange*2,phase*2
 
     def getSliderVal(self,sliders):
         val = [None,None,None]

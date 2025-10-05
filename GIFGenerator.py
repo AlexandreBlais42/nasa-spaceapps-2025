@@ -14,7 +14,7 @@ from ImageGenerator import ImageGenerator, ImageGeneratorMethod
 a = np.array([0.50, 0.50, 0.50])
 b = np.array([0.50, 0.50, 0.50])
 c = np.array([1.00, 1.00, 1.00])
-d = np.array([0.00, 0.33, 0.67])
+d = np.array([0.30, 0.20, 0.20])
 
 pall = color.create_palette(a, b, c, d)
 
@@ -84,6 +84,6 @@ class GIFGenerator:
         images[0].save(self.dirpath + filename, save_all=True, append_images=images[1:], loop=0)
 
 if __name__ == "__main__":
-    gif_generator = GIFGenerator("MERRA-2.nc4", "O3")
+    gif_generator = GIFGenerator("MERRA-2.nc4", "AIRDENS")
     gif_generator.startGeneratingGifs()
     sleep(10)

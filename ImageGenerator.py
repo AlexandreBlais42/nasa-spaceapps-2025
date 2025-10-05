@@ -5,21 +5,22 @@ from PIL import Image, ImageOps, ImageSequence
 class ImageGeneratorMethod(Enum):
     LINEAR = 0
     LOGARITHMIC = 1
+    TEST = 2
 
     def transform(self, value):
         match self.value:
             case ImageGeneratorMethod.LINEAR.value:
                 return value
-
             case ImageGeneratorMethod.LOGARITHMIC.value:
                 return np.log(value)
-
+            case ImageGeneratorMethod.TEST.value:
+                return np.sqrt(value) * np.log(value)
             case _:
                 raise InvalidImageGeneratorMethodException
 
 
 class ImageGenerator:
-    def __init__(self, method=ImageGeneratorMethod.LINEAR, color=np.array):
+    def __init__(self, method=ImageGeneratorMethod.LOGARITHMIC, color=np.array):
         self.method = method
         self.color = color
 
@@ -47,20 +48,14 @@ class ImageGenerator:
 
                 sobel_matrix[i][j] = matrix[i][j] * np.sqrt(x*x+y*y)
 
-        sobel_matrix = np.sign(sobel_matrix) * np.power(10,sobel_matrix)
+        # sobel_matrix = np.sign(sobel_matrix) * np.power(10,sobel_matrix)
 
         minimum_value = sobel_matrix.min()
         maximum_value = sobel_matrix.max()
 
-        sobel_matrix = 1- ( 255 * self.method.transform(sobel_matrix) - minimum_value) / (maximum_value - minimum_value)
+        matrix = (sobel_matrix - minimum_value) / (maximum_value - minimum_value)
 
-        minimum_value = self.method.transform(minimum_value)
-        maximum_value = self.method.transform(maximum_value)
-
-        sobel_matrix = 1- ( 255 * self.method.transform(sobel_matrix) - minimum_value) / (maximum_value - minimum_value)
-        #SOBEL EST PAS FINI
-
-        return sobel_matrix
+        return sobel_matrix - minimum_value
     
     def changeColor(gif,newPalette):
         gif = Image.open(gif)
@@ -84,12 +79,26 @@ class ImageGenerator:
             minimum_value = matrix.min()
             maximum_value = matrix.max()
 
+        self.method = ImageGeneratorMethod.LINEAR
         minimum_value = self.method.transform(minimum_value)
         maximum_value = self.method.transform(maximum_value)
 
-        matrix = 255 * (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
-        #matrix = self.Sobel(matrix)
+        matrix1 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
+        
+        self.method = ImageGeneratorMethod.LOGARITHMIC
+        minimum_value = self.method.transform(minimum_value)
+        maximum_value = self.method.transform(maximum_value)
 
+        matrix2 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
+        
+        matrix = 1000*matrix1 + matrix2
+        minimum_value = matrix.min()
+        maximum_value = matrix.max()
+        matrix = (matrix - minimum_value) / (maximum_value - minimum_value)
+        
+        
+        # matrix = self.Sobel(matrix)
+        matrix *= 255
         image_temp = Image.fromarray(matrix.astype(np.uint8))
         p_img = Image.new('P', (1, 1))
         p_img.putpalette(self.color)

@@ -56,23 +56,23 @@ class ImageGenerator:
         matrix = (sobel_matrix - minimum_value) / (maximum_value - minimum_value)
 
         return sobel_matrix - minimum_value
-    
+
     def changeColor(gif,newPalette):
         gif = Image.open(gif)
         frames = []
         for frame in ImageSequence.Iterator(gif):
             conv = frame.convert('RGB')
-            
+
             p_img = Image.new('P',(1,1))
             p_img.putpalette(newPalette)
             frames.append(conv.quantize(palette=p_img,dither=0))
-            
+
         return frames
 
-            
-            
-    
-        
+
+
+
+
 
     def generateFromMatrix(self, matrix: np.ndarray, minimum_value=None, maximum_value=None) -> Image.Image:
         if minimum_value is None or maximum_value is None:
@@ -84,19 +84,19 @@ class ImageGenerator:
         maximum_value = self.method.transform(maximum_value)
 
         matrix1 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
-        
+
         self.method = ImageGeneratorMethod.LOGARITHMIC
         minimum_value = self.method.transform(minimum_value)
         maximum_value = self.method.transform(maximum_value)
 
         matrix2 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
-        
+
         matrix = 1000*matrix1 + matrix2
         minimum_value = matrix.min()
         maximum_value = matrix.max()
         matrix = (matrix - minimum_value) / (maximum_value - minimum_value)
-        
-        
+
+
         # matrix = self.Sobel(matrix)
         matrix *= 255
         image_temp = Image.fromarray(matrix.astype(np.uint8))

@@ -13,7 +13,7 @@ for entry in os.scandir(directory):
     if entry.is_file():  # check if it's a file
         paths.append(entry.path)
 #print(paths)
-print(len(paths))
+#print(len(paths))
 
 dss = []
 for path in paths :
@@ -21,10 +21,10 @@ for path in paths :
 
 satellite = "MERRA2_monthly_mean"
 #print(dss[0])
-#print(dss[0].variables.keys())
+print(dss[0].variables.keys())
 #print(dss[0].variables["LWI"])
 
-analysed_stuff = "COCL"
+analysed_stuff = "LWI"
 #constant_value = "lev" # NEED TO CHANGE INDEXES :(
 dependant_value = "time" # NEED T CHANGE GIF NAME
 max_list = [dss[v].variables[analysed_stuff][:].max() for v in range(len(dss))]
@@ -50,4 +50,4 @@ for i in range(len(dss)):
     images.append(image)
     Path(satellite + '/' + analysed_stuff).mkdir(parents=True, exist_ok=True)
     #str(1980+i//12) + str(f"{i%12:02d}")
-images[0].save(satellite +'/' + analysed_stuff + "/" + "1980-2025" + '.gif', save_all=True, append_images=images[1:], loop=0)
+images[0].save(satellite +'/' + analysed_stuff + "/" + analysed_stuff + '.gif', save_all=True, append_images=images[1:], loop=0)

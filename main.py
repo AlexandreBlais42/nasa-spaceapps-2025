@@ -4,7 +4,6 @@ from ImageGenerator import ImageGenerator, ImageGeneratorMethod
 from pathlib import Path
 import color
 import numpy as np
-import os
 
 #file_path = 'antarctica_ice_velocity_450m_v2.nc'
 

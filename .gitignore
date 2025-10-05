@@ -1,7 +1,8 @@
 *.nc*
 *.png
 *.gif
-MERRA-2*
+MERRA-2
+test.py
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

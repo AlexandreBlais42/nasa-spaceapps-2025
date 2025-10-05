@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def palette(t: float, a: np.array, b: np.array, c: np.array, d: np.array):
     return a + b * np.cos(6.283185 * (c * t + d))
 
@@ -19,3 +20,19 @@ def create_palette(a: np.array, b: np.array, c: np.array, d: np.array):
         return [x for xs in xss for x in xs]
 
     return flatten(pall)
+
+
+def create_palette_app(a: np.array, b: np.array, c: np.array, d: np.array):
+    step = 1/256
+    pall = [0] * 256
+    for t in range(0, 256):
+        pa = (palette((t*step), a, b, c, d) * 256).astype(np.uint8)
+        pall[t] = pa
+
+    def flatten(xss):
+        return [x for xs in xss for x in xs]
+
+    return flatten(pall)
+
+
+

@@ -17,7 +17,7 @@ d = np.array([0.00, 0.33, 0.67])
 pall = color.create_palette(a, b, c, d)
 
 class GIFGenerator:
-    def __init__(self, filepath: str, variable: str, color=pall):
+    def __init__(self, filepath: str, variable: str, color=[a,b,c,d]):
         self.filepath = filepath
         self.variable = variable
         self.color = color

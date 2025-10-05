@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 
-def extractMatrix(satellite, folder, path, analysed_stuff) :
+def extractMatrix(satellite, folder, path, analysed_stuff):
     """
     satellite : String
     folder : bool
@@ -14,22 +14,22 @@ def extractMatrix(satellite, folder, path, analysed_stuff) :
     """
     matrices = []
     paths = []
-    if folder :
+    if folder:
         directory = satellite+"_DATA"
         for entry in os.scandir(directory):
             if entry.is_file():
                 paths.append(entry.path)
         dss = []
-        for path in paths :
+        for path in paths:
             dss.append(nc.Dataset(path))
         liste = []
-        for v in dss[0].variables.keys() :
-            if v.isupper() :
+        for v in dss[0].variables.keys():
+            if v.isupper():
                 liste.append(v)
         assert(len(dss[v].variables[analysed_stuff][:].shape) == 2) # :(
-        for v in range(len(liste)) :
+        for v in range(len(liste)):
             matrices.append(dss[v].variables[analysed_stuff][:])
-    else :
+    else:
         ds = nc.Dataset(path)
         return ds.variables[analysed_stuff][:]
     return matrices

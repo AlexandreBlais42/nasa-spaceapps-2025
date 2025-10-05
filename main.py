@@ -24,8 +24,8 @@ for path in paths :
 def palette( t:float,  a:np.array,  b:np.array,  c:np.array, d:np.array ):
     return a + b*np.cos( 6.283185*(c*t+d) );
 
-a = np.array([0.4, 0.4, 0.4])
-b = np.array([0.6, 0.6, 0.6])
+a = np.array([0.5, 0.5, 0.5])
+b = np.array([0.5, 0.5, 0.5])
 c = np.array([1.0, 1.0, 1.0])
 d = np.array([0.00, 0.33, 0.67])
 
@@ -58,7 +58,7 @@ for analysed_stuff in list :
     images = []
     for i in range(len(dss)):
         pseudomatrix = dss[i].variables[analysed_stuff]
-        image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
+        image_generator = ImageGenerator(color=pall)
         matrix = pseudomatrix[:]
         image = image_generator.generateFromMatrix(matrix, maximum, minimum)
         images.append(image)

@@ -65,6 +65,6 @@ for analysed_stuff in list :
         Path(satellite).mkdir(parents=True, exist_ok=True)
         if janick :
             Path(satellite + '/' + analysed_stuff).mkdir(parents=True, exist_ok=True)
-            image.save(satellite + '/' + analysed_stuff + str(i) + ".png")
+            image.save(satellite + '/' + analysed_stuff + '/' + str(i) + ".png")
     if not janick :
         images[0].save(satellite +'/' + analysed_stuff + '.gif', save_all=True, append_images=images[1:], loop=0)

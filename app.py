@@ -6,6 +6,7 @@ from tkinter import filedialog
 from pathlib import Path
 import os
 from PIL import Image, ImageTk, ImageSequence
+import shutil
 
 colorPalette ={
     "luminosity":[0.5,0.5,0.5],
@@ -373,8 +374,11 @@ class App():
 
         if nb > 0:
             #self._set_loading(False)
+            name, ext = os.path.splitext(self.selected_file)
+            name =Path(name)
+            shutil.rmtree(os.path.join(name.stem,self.variablesDropdown.get().split("/")[-1].strip()))
             self._last_key = None
-            self._setup_slider_and_show_first(nb)                
+            #self._setup_slider_and_show_first(nb)                
 
         #no gif
         #set loading
@@ -391,7 +395,7 @@ class App():
         self.gif_generator.startGeneratingGifs()
 
         # Reset polling counters & start
-        self._last_poll_count = 0
+        self._last_poll_count = -1
         self._stable_ticks = 0
         self._poll_loops = 0
         self._poll_generation_done()
@@ -401,52 +405,16 @@ class App():
     def _poll_generation_done(self):
         """Updates UI if polling is done."""
         target = self._target_dir()
-        current_count = self._count_gifs(target)
-
-        # Nombre attendu : priorité à self._expected_gifs, sinon essaye de le prendre du générateur
-        expected = getattr(self, "_expected_gifs", None)
-        if expected is None:
-            expected = getattr(self.gif_generator, "expected_count", None)
-        if expected is None:
-            expected = getattr(self.gif_generator, "n", None)  # autre nom possible
-
-        # Vrai si "tous générés" (fort)
-        strong_ready = (expected is not None) and (current_count >= int(expected))
-
-        # Détecter stagnation (aucune progression)
-        if current_count == getattr(self, "_last_poll_count", -1):
-            self._stable_ticks = getattr(self, "_stable_ticks", 0) + 1
-        else:
-            self._stable_ticks = 0
-        self._last_poll_count = current_count
-
-        STABLE_TICKS_THRESHOLD = 6   # ~3s si intervalle=500ms
-        TIMEOUT_TICKS = 120          # ~60s
-
-        # Critère "prêt": 
-        #  - Si on connaît expected: prêt UNIQUEMENT quand current_count >= expected
-        #  - Si on ne connaît PAS expected: fallback = stable ticks ou timeout avec progrès >0
-        if expected is not None:
-            ready = strong_ready
-        else:
-            ready = (current_count > 0 and self._stable_ticks >= STABLE_TICKS_THRESHOLD)
-
-        self._poll_loops = getattr(self, "_poll_loops", 0) + 1
-        timeout = self._poll_loops >= TIMEOUT_TICKS
-
-        # En cas de timeout: n'autoriser "ready" que si on a au moins un résultat
-        if timeout and current_count > 0:
-            # Si expected est connu mais non atteint, on peut soit:
-            #  - rester en attente (ne rien faire), OU
-            #  - afficher partiel (décommenter la ligne suivante si tu veux forcer l'affichage partiel au timeout)
-            # ready = True
-            pass
-
+        try :
+            self.old = self.current_count
+        except:
+            self.old =0
+        self.current_count = self._count_gifs(target)
+        
         # === Ready: mise à jour UI ===
-        if ready:
-            
+        print(self.current_count)
+        if self.current_count ==self.old and self.old !=0:
             self._set_loading(False)
-            self.ElevationSlider.set(1)
             self.changeSlider()
 
             current_var = self.variablesDropdown.get().split("/")[-1].strip()
@@ -493,7 +461,7 @@ class App():
             return
 
         #if 1 gif, remove slider
-        if nb_gif == 1:
+        if nb_gif == 1 :
             self.ElevationSlider.grid_remove()
             first_path = os.path.join(target, "1.0.gif")
             if hasattr(self, "gif_widget"):

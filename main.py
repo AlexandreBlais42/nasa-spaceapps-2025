@@ -39,11 +39,14 @@ def flatten(xss):
 pall = flatten(pall)
 
 #print(ds)
-#print(ds.variables.keys())
+#print(dss[0].variables.keys())
 #print(ds.variables["CNT"])
 #print(ds.groups["PRODUCT"].variables["carbonmonoxide_total_column_corrected"].dimensions)
 
-list = ["VX", "VY", "STDX", "STDY", "ERRX", "ERRY", "CNT"]
+list = []
+for v in dss[0].variables.keys() :
+    if v.isupper() :
+        list.append(v)
 
 for analysed_stuff in list :
     max_list = [dss[v].variables[analysed_stuff][:].max() for v in range(len(dss))]

@@ -7,154 +7,372 @@ from pathlib import Path
 import os
 from PIL import Image, ImageTk, ImageSequence
 
-class App():
-    def __init__(self,root):
-        self.main_root = root
-        self.main_root.bind('<Escape>', lambda e: self._escape())
 
-        w = self.main_root.winfo_screenwidth()/5
-        h = self.main_root.winfo_screenheight()/5
+class App():
+    def __init__(self, root):
+        self.main_root = root
+        self.main_root.bind('<Escape>', self._escape)
+
+        w = self.main_root.winfo_screenwidth() // 2
+        h = self.main_root.winfo_screenheight() // 2
         self.main_root.geometry(f"{w}x{h}")
-        #self.main_root.after(0, lambda: self.main_root.state("zoomed"))
+
         self.gif_generator = None
+        self._generating = False
+        self._last_key = None
+        self._poll_after_id = None
+        self._last_poll_count = -1
+        self._stable_ticks = 0
+        self._poll_loops = 0
+
         self.initWidget()
         self.main_root.mainloop()
 
+    # ---------------- UI init ----------------
     def initWidget(self):
         self.paramsFrame = ctk.CTkFrame(self.main_root, corner_radius=10, border_width=1, border_color="grey")
-        self.paramsFrame.grid(row=0,column=0,padx=5,pady=5)
+        self.paramsFrame.grid(row=0, column=0, padx=5, pady=5)
+
         self.gifFrame = ctk.CTkFrame(self.main_root, corner_radius=10, border_width=1, border_color="grey")
-        self.gifFrame.grid(row =0,column =1,padx=5,pady=5)
+        self.gifFrame.grid(row=0, column=1, padx=5, pady=5)
 
-        self.ElevationSlider = ctk.CTkSlider(self.gifFrame, command=self.displayGif,orientation="vertical")
-
+        self.ElevationSlider = ctk.CTkSlider(self.gifFrame, command=self.displayGif, orientation="vertical")
         self.ElevationSlider.grid(row=0, column=1, padx=5, pady=5, sticky="sn")
         self.ElevationSlider.grid_remove()
 
-        self.generateGif = ctk.CTkButton(self.paramsFrame,text="generate",command=self.verifyGifGeneration)
-        self.generateGif.grid(row=1,column=0,padx=5,pady=5)
+        self.generateGif = ctk.CTkButton(self.paramsFrame, text="Generate", command=self.verifyGifGeneration)
+        self.generateGif.grid(row=1, column=0, padx=5, pady=5)
+        self.generateGif.grid_remove()
 
         self.selected_file = None
-        self.fileSelection = ctk.CTkButton(self.paramsFrame,text="select a file",command=self.selectFile)
-        self.fileSelection.grid(row=2,column=0,padx=5,pady=5)
+        self.fileSelection = ctk.CTkButton(self.paramsFrame, text="Select a file", command=self.selectFile)
+        self.fileSelection.grid(row=2, column=0, padx=5, pady=5)
 
-        self.variablesDropdown = ctk.CTkOptionMenu(self.paramsFrame, values=["no file"],command=self.changeSlider)
-        self.variablesDropdown.grid(row=0,column=0,padx=5,pady=5)
+        self.variablesDropdown = ctk.CTkOptionMenu(self.paramsFrame, values=["no file"], command=self.changeSlider)
+        self.variablesDropdown.grid(row=0, column=0, padx=5, pady=5)
 
-    def getValues(self)->list:
-        if self.selected_file == None: return []
+    # ---------------- Small helpers ----------------
+    def _target_dir(self) -> str:
+        var = self.variablesDropdown.get().split("/")[-1].strip()
+        base = os.path.splitext(Path(self.selected_file).name)[0]
+        return os.path.join(base, var)
+
+    def _count_gifs(self, folder: str) -> int:
+        if not os.path.isdir(folder):
+            return 0
+        return len([f for f in os.listdir(folder) if f.lower().endswith(".gif")])
+
+    def _set_loading(self, is_loading: bool, text: str = "Generating..."):
+        
+        if is_loading:
+            self._generating = True
+            self.generateGif.grid()
+            self.generateGif.configure(text=text, state="disabled")
+            self.variablesDropdown.configure(state="disabled")
+            self.ElevationSlider.grid_remove()
+
+            if hasattr(self, "gif_widget"):
+                try:
+                    self.gif_widget.load("loading.gif", keep_position=False)
+                except Exception:
+                    pass
+            else :
+                self._last_key = None
+                self.gif_widget = self.GifPlayer(self.gifFrame, gif_path="loading.gif", delay=150, text="")
+                self.gif_widget.grid(row=0, column=0, padx=5, pady=5)
+        else:
+            self._generating = False
+            self.generateGif.configure(text="Generate", state="normal")
+            self.variablesDropdown.configure(state="normal")
+
+    def _is_all_ready(self, current_count: int) -> bool:
+        """Vrai uniquement si la génération est terminée (is_done / expected / DONE)."""
+        # 1) Flag explicite fourni par le générateur
+        if bool(getattr(self.gif_generator, "is_done", False)):
+            return True
+        # 2) Nombre total attendu
+        expected = getattr(self.gif_generator, "expected", None)
+        if isinstance(expected, int) and expected > 0 and current_count >= expected:
+            return True
+        # 3) Fichier sentinelle
+        done_path = os.path.join(self._target_dir(), "DONE")
+        if os.path.exists(done_path):
+            return True
+        return False
+
+    # ---------------- Data helpers ----------------
+    def getValues(self) -> list:
+        if self.selected_file is None:
+            return []
         goodlist = []
         ds = nc.Dataset(self.selected_file)
-        for v in ds.variables.keys():
-            list = ds.variables[str(v)].dimensions
-            if "time" in list and "lat" in list and "lon"in list:
-                goodlist.append(v)
+        try:
+            for v in ds.variables.keys():
+                dims = ds.variables[str(v)].dimensions
+                if "time" in dims and "lat" in dims and "lon" in dims:
+                    goodlist.append(v)
+        finally:
+            ds.close()
         return goodlist
 
+    # ---------------- Main actions ----------------
     def selectFile(self):
         self.selected_file = filedialog.askopenfilename(
             title="Sélectionner un fichier",
-            filetypes=(("Fichiers NetCDF", "*.nc4"), ("Tous les fichiers", "*.*")))
+            filetypes=(("Fichiers NetCDF", "*.nc4;*.nc"), ("Tous les fichiers", "*.*"))
+        )
+        if not self.selected_file:
+            return
+
         values = self.getValues()
-        self.variablesDropdown.set(values[0])
-        self.variablesDropdown.configure(values=self.getValues())
-
-        filename = Path(self.selected_file).name
-        self.fileSelection.configure(text=filename)
-        self.verifyGifGeneration()
-        print(self.selected_file)
-
-    def verifyGifGeneration(self):
-        if self.selected_file == None:
-            print("No file selected")
-            return
-        data_selected = os.path.join(os.path.splitext(Path(self.selected_file).name)[0],self.variablesDropdown.get())
-        if os.path.isdir(data_selected):
-            print("file found")
-            self.ElevationSlider.grid()
-            self.generateGif.grid_remove()
-            self.displayGif(None)
+        if values:
+            self.variablesDropdown.configure(values=values)
+            self.variablesDropdown.set(values[0])
         else:
-            self.ElevationSlider.grid_remove()
-            print("file not found generating gif")
-            if self.gif_generator is None:
-                self.gif_generator = GIFGenerator(self.selected_file, self.variablesDropdown.get())
-                self.gif_generator.startGeneratingGifs()
+            self.variablesDropdown.configure(values=["no var"])
+            self.variablesDropdown.set("no var")
 
+        self.fileSelection.configure(text=Path(self.selected_file).name)
+        self._last_key = None
+        self.changeSlider(None)
 
-    def displayGif(self, _):
-        if self.selected_file is None:
-            return
-
-        satellite = os.path.splitext(Path(self.selected_file).name)[0]
-        var = self.variablesDropdown.get().split("/")[-1].strip()
-        elevation = int(np.ceil(self.ElevationSlider.get()))
-
-        key = (var, elevation)
-        if getattr(self, "_last_key", None) == key:
-            return
-        self._last_key = key
-        print("elevation", elevation, "var", var)
-
-        if self.gif_generator is not None:
-            self.gif_generator.setPreferedlevel(elevation)
-
-        gifPath = os.path.join(satellite, var, f"{elevation}.0.gif")
-        if hasattr(self, "gif_widget"):
-            self.gif_widget.load(gifPath, keep_position=True)
-        else:
-            self.gif_widget = self.GifPlayer(self.gifFrame, gif_path=gifPath, delay=150, text="")
-            self.gif_widget.grid(row=0, column=0, padx=5, pady=5)  
-    
     def changeSlider(self, _):
+        #if no file, remove slider from UI
         if self.selected_file is None:
+            self.variablesDropdown.configure(state="normal")
             self.generateGif.grid()
+            self.generateGif.configure(text="Generate", state="normal")
             self.ElevationSlider.grid_remove()
             if hasattr(self, "gif_widget"):
                 self._last_key = None
-                self.gif_widget.load("loading.gif", keep_position=True)
+                try:
+                    self.gif_widget.load("loading.gif", keep_position=False)
+                except Exception:
+                    pass
             return
 
-        var = self.variablesDropdown.get().split("/")[-1].strip()
-        base = os.path.splitext(Path(self.selected_file).name)[0]
-        data_selected = os.path.join(base, var)
+        #get gif path
+        target = self._target_dir()
+        nb_gif = self._count_gifs(target)
 
-        if not os.path.isdir(data_selected):
-            self.ElevationSlider.grid_remove()
-            self.generateGif.grid()
-            if hasattr(self, "gif_widget"):
-                self._last_key = None
-                self.gif_widget.load("loading.gif", keep_position=True)
+        #if in generation force loading
+        if self._generating:
+            self._set_loading(True, "Generating...")
             return
 
-        files = [f for f in os.listdir(data_selected) if f.lower().endswith(".gif")]
-        nb_gif = len(files)
-        print(nb_gif)
-
+        #no gif, set UI
         if nb_gif == 0:
+            self.variablesDropdown.configure(state="normal")
             self.ElevationSlider.grid_remove()
             self.generateGif.grid()
+            self.generateGif.configure(text="Generate", state="normal")
             if hasattr(self, "gif_widget"):
                 self._last_key = None
-                self.gif_widget.load("loading.gif", keep_position=True)
+                try:
+                    self.gif_widget.load("loading.gif", keep_position=False)
+                except Exception:
+                    pass
             return
-
+        
+        #1 gif no slider
         if nb_gif == 1:
+            self.generateGif.grid_remove()
+            self.variablesDropdown.configure(state="normal")
             self.ElevationSlider.grid_remove()
-            self.generateGif.grid()
+            first_path = os.path.join(target, "1.0.gif")
             if hasattr(self, "gif_widget"):
                 self._last_key = None
-                self.gif_widget.load(os.path.join(data_selected, "1.0.gif"), keep_position=False)
+                self.gif_widget.load(first_path, keep_position=False)
+            else:
+                self._last_key = None
+                self.gif_widget = self.GifPlayer(self.gifFrame, gif_path=first_path, delay=150, text="")
+                self.gif_widget.grid(row=0, column=0, padx=5, pady=5)
             return
 
+        # nb_gif > 1
         self.generateGif.grid_remove()
-        self.ElevationSlider.configure(from_=nb_gif, to=1, number_of_steps=nb_gif+1)
+        self.variablesDropdown.configure(state="normal")
+        self.ElevationSlider.configure(from_=1, to=nb_gif, number_of_steps=nb_gif - 1)
         self.ElevationSlider.set(1)
         self._last_key = None
         self.ElevationSlider.grid()
         self.displayGif(None)
 
+    def verifyGifGeneration(self):
+        if self.selected_file is None:
+            print("No file selected")
+            return
 
+        #stop process if one is started
+        if self._poll_after_id:
+            try:
+                self.main_root.after_cancel(self._poll_after_id)
+            except Exception:
+                pass
+            self._poll_after_id = None
+
+        target = self._target_dir()
+        nb = self._count_gifs(target)
+
+        #already ready
+        if nb > 0 and self._is_all_ready(nb):
+            self._set_loading(False)
+            self.generateGif.grid_remove()
+            self._last_key = None
+            self._setup_slider_and_show_first(nb)
+            return
+
+        #no gif
+        #set loading
+        self._set_loading(True, "Generating...")
+
+        #init data for Gif gen
+        var = self.variablesDropdown.get().split("/")[-1].strip()
+        if (self.gif_generator is None
+            or getattr(self.gif_generator, "nc_path", None) != self.selected_file
+            or getattr(self.gif_generator, "var", None) != var):
+            self.gif_generator = GIFGenerator(self.selected_file, var)
+
+        #start gen
+        self.gif_generator.startGeneratingGifs()
+
+        # Reset polling counters & start
+        self._last_poll_count = -1
+        self._stable_ticks = 0
+        self._poll_loops = 0
+        self._poll_generation_done()
+
+    # ---------------- Polling ----------------
+    def _poll_generation_done(self):
+        """Updates UI if polling is done.
+        """
+        target = self._target_dir()
+        current_count = self._count_gifs(target)
+
+        #True if done
+        strong_ready = self._is_all_ready(current_count)
+
+        #verify if gif are still generating given a time lapse
+        if current_count == self._last_poll_count:
+            self._stable_ticks += 1
+        else:
+            self._stable_ticks = 0
+        self._last_poll_count = current_count
+
+        STABLE_TICKS_THRESHOLD = 6
+        TIMEOUT_TICKS = 120
+
+        ready = strong_ready or (current_count > 0 and self._stable_ticks >= STABLE_TICKS_THRESHOLD)
+
+        self._poll_loops += 1
+        timeout = self._poll_loops >= TIMEOUT_TICKS
+        if timeout and current_count > 0:
+            ready = True
+
+        #ready to update UI
+        if ready:
+            self._set_loading(False)
+            self.generateGif.grid_remove()
+
+            current_var = self.variablesDropdown.get().split("/")[-1].strip()
+            gen_var = getattr(self.gif_generator, "var", current_var)
+
+            if current_var == gen_var:
+                self._last_key = None
+                nb = self._count_gifs(target)  # recalc final
+                self._setup_slider_and_show_first(nb)
+
+            # Stop polling & reset
+            if self._poll_after_id:
+                try:
+                    self.main_root.after_cancel(self._poll_after_id)
+                except Exception:
+                    pass
+            self._poll_after_id = None
+            self._stable_ticks = 0
+            self._poll_loops = 0
+            self._last_poll_count = -1
+            return
+
+        # Continue polling
+        self._poll_after_id = self.main_root.after(500, self._poll_generation_done)
+
+    # ---------------- Display ----------------
+    def _setup_slider_and_show_first(self, nb_gif: int):
+        
+        #get directory
+        target = self._target_dir()
+
+        #if no gif set loading image
+        if nb_gif <= 0:
+            self.ElevationSlider.grid_remove()
+            if hasattr(self, "gif_widget"):
+                try:
+                    self.gif_widget.load("loading.gif", keep_position=False)
+                except Exception:
+                    pass
+            return
+
+        #if 1 gif, remove slider
+        if nb_gif == 1:
+            self.ElevationSlider.grid_remove()
+            first_path = os.path.join(target, "1.0.gif")
+            if hasattr(self, "gif_widget"):
+                self._last_key = None
+                self.gif_widget.load(first_path, keep_position=False)
+            #not sure this is usefull
+            else:
+                self._last_key = None
+                self.gif_widget = self.GifPlayer(self.gifFrame, gif_path=first_path, delay=150, text="")
+                self.gif_widget.grid(row=0, column=0, padx=5, pady=5)
+            return
+
+        # nb_gif > 1 setup slider
+        self.ElevationSlider.configure(from_=1, to=nb_gif, number_of_steps=nb_gif - 1)
+        self.ElevationSlider.set(1)
+        self._last_key = None
+        self.ElevationSlider.grid()
+        #show gif
+        self.displayGif(None)
+
+    def displayGif(self, _):
+        #no file for whatever reason
+        if self.selected_file is None:
+            return
+
+        #data from UI
+        satellite = os.path.splitext(Path(self.selected_file).name)[0]
+        var = self.variablesDropdown.get().split("/")[-1].strip()
+
+        # clamp to min 1
+        val = self.ElevationSlider.get()
+        elevation = max(1, int(np.ceil(val)))
+
+        #Reload each n e Z
+        key = (var, elevation)
+        if self._last_key == key:
+            return
+        self._last_key = key
+        
+        #define prefered level
+        if self.gif_generator is not None:
+            try:
+                self.gif_generator.setPreferedlevel(elevation)
+            except Exception:
+                pass
+        
+        #load gif into a gif player or start a new gif player
+        gifPath = os.path.join(satellite, var, f"{elevation}.0.gif")
+        if hasattr(self, "gif_widget"):
+            self.gif_widget.load(gifPath, keep_position=True)
+        else:
+            self.gif_widget = self.GifPlayer(self.gifFrame, gif_path=gifPath, delay=150, text="")
+            self.gif_widget.grid(row=0, column=0, padx=5, pady=5)
+
+    def _escape(self,_):
+        pass
+
+    # ---------------- GIF player ----------------
     class GifPlayer(ctk.CTkLabel):
         def __init__(self, master, gif_path, delay=150, *args, **kwargs):
             super().__init__(master, *args, **kwargs)
@@ -203,7 +421,6 @@ class App():
                 new_index = 0
 
             self.index = max(0, min(len(self.frames) - 1, new_index))
-
             self.configure(image=self.frames[self.index], text="")
             self._schedule_next()
 

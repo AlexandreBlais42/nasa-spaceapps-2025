@@ -19,7 +19,7 @@ class ImageGeneratorMethod(Enum):
 
 
 class ImageGenerator:
-    def __init__(self, method=ImageGeneratorMethod.LINEAR,color=np.array):
+    def __init__(self, method=ImageGeneratorMethod.LINEAR, color=np.array):
         self.method = method
         self.color = color
         
@@ -75,7 +75,7 @@ class ImageGenerator:
         #matrix = self.Sobel(matrix)
 
         image_temp = Image.fromarray(matrix.astype(np.uint8))
-        p_img = Image.new('P',(1,1))
+        p_img = Image.new('P', (1, 1))
         p_img.putpalette(self.color)
         return ImageOps.flip(image_temp.quantize(palette=p_img, dither=0))
     

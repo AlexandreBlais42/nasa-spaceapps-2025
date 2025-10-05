@@ -1,4 +1,5 @@
 import numpy as np
+from PIL import Image
 
 
 def palette(t: float, a: np.array, b: np.array, c: np.array, d: np.array):
@@ -33,6 +34,19 @@ def create_palette_app(a: np.array, b: np.array, c: np.array, d: np.array):
         return [x for xs in xss for x in xs]
 
     return flatten(pall)
+
+
+def colorbar(abcd):
+    width = 256
+    height = 16
+    step = width/256
+    colorbar = [[i for _ in range(height)] for i in range(width)]
+    pall = create_palette(*abcd)
+
+    image = Image.fromarray(np.array(colorbar,dtype=np.uint8).T)
+    image.putpalette(pall)
+    image.show()
+    return image
 
 
 

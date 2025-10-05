@@ -8,6 +8,8 @@ import os
 
 #file_path = 'antarctica_ice_velocity_450m_v2.nc'
 
+janick = False
+
 satellite = "GEOSS"
 paths = []
 directory = 'GEOSS_DATA'
@@ -61,5 +63,8 @@ for analysed_stuff in list :
         image = image_generator.generateFromMatrix(matrix, maximum, minimum)
         images.append(image)
         Path(satellite).mkdir(parents=True, exist_ok=True)
-        #str(1980+i//12) + str(f"{i%12:02d}")
-    images[0].save(satellite +'/' + analysed_stuff + '.gif', save_all=True, append_images=images[1:], loop=0)
+        if janick :
+            Path(satellite + '/' + analysed_stuff).mkdir(parents=True, exist_ok=True)
+            image.save(satellite + '/' + analysed_stuff + str(i) + ".png")
+    if not janick :
+        images[0].save(satellite +'/' + analysed_stuff + '.gif', save_all=True, append_images=images[1:], loop=0)

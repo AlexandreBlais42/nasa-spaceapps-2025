@@ -10,18 +10,17 @@ import netCDF4 as nc
 
 from ImageGenerator import ImageGenerator, ImageGeneratorMethod
 
-
 a = np.array([0.50, 0.50, 0.50])
 b = np.array([0.50, 0.50, 0.50])
 c = np.array([1.00, 1.00, 1.00])
-d = np.array([0.30, 0.20, 0.20])
-
+d = np.array([0.00, 0.33, 0.67])
 pall = color.create_palette(a, b, c, d)
 
 class GIFGenerator:
-    def __init__(self, filepath: str, variable: str):
+    def __init__(self, filepath: str, variable: str, color=pall):
         self.filepath = filepath
         self.variable = variable
+        self.color = color
 
     def setPreferedlevel(self, level: int):
         self.prefered_level = level
@@ -34,9 +33,12 @@ class GIFGenerator:
         for gif in os.listdir(dirpath):
             newGif = ImageGenerator.changeColor(dirpath+'/'+gif,newPalette)
             newGif[0].save(dirpath+'/'+gif,save_all=True, append_images=newGif[1:], loop=0)
+            #perte de résolution
 
     def generateGifs(self):
         self.dataset = nc.Dataset(self.filepath)
+        
+        pall = color.create_palette(*color)
 
         #Verification of lev layers
         dimensions = self.dataset.variables[self.variable].dimensions

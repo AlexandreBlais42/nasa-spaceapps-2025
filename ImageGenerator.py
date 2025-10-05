@@ -90,8 +90,8 @@ class ImageGenerator:
         maximum_value = self.method.transform(maximum_value)
 
         matrix2 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
-
-        matrix = 1000*matrix1 + matrix2
+        
+        matrix = matrix1 + matrix2
         minimum_value = matrix.min()
         maximum_value = matrix.max()
         matrix = (matrix - minimum_value) / (maximum_value - minimum_value)
@@ -103,9 +103,6 @@ class ImageGenerator:
         p_img = Image.new('P', (1, 1))
         p_img.putpalette(self.color)
         return ImageOps.flip(image_temp.quantize(palette=p_img, dither=0))
-
-
-
 
 
 

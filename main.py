@@ -4,25 +4,34 @@ from ImageGenerator import ImageGenerator, ImageGeneratorMethod
 from pathlib import Path
 import color
 import numpy as np
+import os
 
-file_path = 'MERRA2-DATA/MERRA2_100.tavgM_2d_chm_Nx.198001.nc4'
-ds = nc.Dataset(file_path)
+#file_path = 'MERRA2-DATA/MERRA2_100.tavgM_2d_chm_Nx.198001.nc4'
+paths = []
+directory = 'MERRA2-DATA'
+for entry in os.scandir(directory):  
+    if entry.is_file():  # check if it's a file
+        paths.append(entry.path)
+#print(paths)
+print(len(paths))
+
+dss = []
+for path in paths :
+    dss.append(nc.Dataset(path))
 
 satellite = "MERRA2_monthly_mean"
-print(ds)
-print(ds.variables.keys())
-print(ds.variables["LWI"])
+#print(dss[0])
+#print(dss[0].variables.keys())
+#print(dss[0].variables["LWI"])
 
-
-exit(0)
-
-analysed_stuff = "O3"
-constant_value = "lev" # NEED TO CHANGE INDEXES :(
+analysed_stuff = "COCL"
+#constant_value = "lev" # NEED TO CHANGE INDEXES :(
 dependant_value = "time" # NEED T CHANGE GIF NAME
-pseudomatrix = ds.variables[analysed_stuff]
+max_list = [dss[v].variables[analysed_stuff][:].max() for v in range(len(dss))]
+min_list = [dss[v].variables[analysed_stuff][:].min() for v in range(len(dss))]
 
-max = pseudomatrix[:].max()
-min = pseudomatrix[:].min()
+max = max(max_list)
+min = min(min_list)
 
 a = np.array([0.5, 0.5, 0.5])
 b = np.array([0.50, 0.50, 0.50])
@@ -31,12 +40,14 @@ d = np.array([0.00, 0.33, 0.67])
 
 pall = color.create_palette(a, b, c, d)
 
-for ind_elev, elevation in tqdm(enumerate(ds.variables[constant_value][:])) :
-    images = []
-    for ind_time, time in enumerate(ds.variables[dependant_value][:]) :
-        image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
-        matrix = pseudomatrix[ind_time, ind_elev, :, :]
-        image = image_generator.generateFromMatrix(matrix, max, min)
-        images.append(image)
+images = []
+
+for i in range(len(dss)):
+    pseudomatrix = dss[i].variables[analysed_stuff]
+    image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
+    matrix = pseudomatrix[0, :, :]
+    image = image_generator.generateFromMatrix(matrix, max, min)
+    images.append(image)
     Path(satellite + '/' + analysed_stuff).mkdir(parents=True, exist_ok=True)
-    images[0].save(satellite +'/' + analysed_stuff + "/" + str(elevation) + '.gif', save_all=True, append_images=images[1:], loop=0)
+    #str(1980+i//12) + str(f"{i%12:02d}")
+images[0].save(satellite +'/' + analysed_stuff + "/" + "1980-2025" + '.gif', save_all=True, append_images=images[1:], loop=0)

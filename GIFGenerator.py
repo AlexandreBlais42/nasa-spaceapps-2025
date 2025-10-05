@@ -43,7 +43,7 @@ class GIFGenerator:
         self.haslevels = True
         if "lev" not in dimensions:
             self.levels = [1]
-        if "lev" not in dimensions :
+        if "lev" not in dimensions:
             self.levels = [1.0]
             self.haslevels = False
         else:

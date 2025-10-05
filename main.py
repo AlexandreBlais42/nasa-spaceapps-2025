@@ -13,19 +13,19 @@ janick = False
 satellite = "GEOSS"
 paths = []
 directory = 'GEOSS_DATA'
-for entry in os.scandir(directory):  
+for entry in os.scandir(directory):
     if entry.is_file():
         paths.append(entry.path)
 
 dss = []
-for path in paths :
+for path in paths:
     dss.append(nc.Dataset(path))
 
 def palette( t:float,  a:np.array,  b:np.array,  c:np.array, d:np.array ):
     return a + b*np.cos( 6.283185*(c*t+d) );
 
-a = np.array([0.5, 0.5, 0.5])
-b = np.array([0.5, 0.5, 0.5])
+a = np.array([0.4, 0.4, 0.4])
+b = np.array([0.6, 0.6, 0.6])
 c = np.array([1.0, 1.0, 1.0])
 d = np.array([0.00, 0.33, 0.67])
 
@@ -46,11 +46,11 @@ pall = flatten(pall)
 #print(ds.groups["PRODUCT"].variables["carbonmonoxide_total_column_corrected"].dimensions)
 
 list = []
-for v in dss[0].variables.keys() :
-    if v.isupper() :
+for v in dss[0].variables.keys():
+    if v.isupper():
         list.append(v)
 
-for analysed_stuff in list :
+for analysed_stuff in list:
     max_list = [dss[v].variables[analysed_stuff][:].max() for v in range(len(dss))]
     min_list = [dss[v].variables[analysed_stuff][:].min() for v in range(len(dss))]
     maximum = max(max_list)
@@ -58,13 +58,13 @@ for analysed_stuff in list :
     images = []
     for i in range(len(dss)):
         pseudomatrix = dss[i].variables[analysed_stuff]
-        image_generator = ImageGenerator(color=pall)
+        image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
         matrix = pseudomatrix[:]
         image = image_generator.generateFromMatrix(matrix, maximum, minimum)
         images.append(image)
         Path(satellite).mkdir(parents=True, exist_ok=True)
-        if janick :
+        if janick:
             Path(satellite + '/' + analysed_stuff).mkdir(parents=True, exist_ok=True)
             image.save(satellite + '/' + analysed_stuff + '/' + str(i) + ".png")
-    if not janick :
+    if not janick:
         images[0].save(satellite +'/' + analysed_stuff + '.gif', save_all=True, append_images=images[1:], loop=0)

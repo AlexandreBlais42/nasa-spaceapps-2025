@@ -33,7 +33,7 @@ class App():
         self._poll_loops = 0
 
         self.initWidget()
-        #background 
+        #background
         self.background = self.set_background(frame= self.main_root,image_path="bg2.webp")
         self.main_root.bind("<Configure>",self._on_configure_gate)
         self.main_root.mainloop()
@@ -45,7 +45,7 @@ class App():
 
         self.gifFrame = ctk.CTkFrame(self.main_root, corner_radius=2, border_width=1, border_color="grey")
         self.gifFrame.grid(row=0, column=1, padx=5, pady=5)
-        
+
         #slider
         self.elevatorFrame = ctk.CTkFrame(self.gifFrame,border_width=1,corner_radius=5)
         self.elevatorFrame.grid(row=0,column=1,padx=5,pady=5)
@@ -61,7 +61,7 @@ class App():
         self.djTableFrame = ctk.CTkFrame(self.gifFrame,border_width=1)
         self.djTableFrame.grid(row=0,column=2,padx=5,pady=5)
 
-       
+
         #luminosity
         self.luminosityFrame,self.luminositySliders = self.createDJTable(colorPalette['luminosity'],"luminosity")
         self.luminosityFrame.grid(row=0,column=0,padx=5,pady=5)
@@ -102,7 +102,7 @@ class App():
         is_full = bool(self.main_root.attributes("-fullscreen")) if hasattr(self.main_root, "attributes") else False
         if is_zoomed or is_full:
             return
-        
+
         self.main_root.update_idletasks()
         target_w = content_widget.winfo_reqwidth()
         target_h = content_widget.winfo_reqheight()
@@ -173,14 +173,14 @@ class App():
 
         frame.bind("<Configure>", _on_resize)
         return bg_lbl
-    
+
     def getDJValues(self):
         luminosity =self.getSliderVal(self.luminositySliders)
         contrast = self.getSliderVal(self.contrastSliders)
         phase = self.getSliderVal(self.phaseSliders)
         colorRange =self.getSliderVal(self.colorRangeSliders)
         return luminosity,contrast,phase,colorRange
-    
+
     def getSliderVal(self,sliders):
         val = [None,None,None]
         for i,slider in enumerate(sliders):
@@ -209,7 +209,7 @@ class App():
         return len([f for f in os.listdir(folder) if f.lower().endswith(".gif")])
 
     def _set_loading(self, is_loading: bool, text: str = "Generating..."):
-        
+
         if is_loading:
             self._generating = True
             self.generateGif.grid()
@@ -222,7 +222,7 @@ class App():
                     self.gif_widget.load("loading.gif", keep_position=False)
                 except Exception:
                     pass
-            else :
+            else:
                 self._last_key = None
                 self.gif_widget = self.GifPlayer(self.gifFrame, gif_path="loading.gif", delay=150, text="")
                 self.gif_widget.grid(row=0, column=0, padx=5, pady=5)
@@ -281,7 +281,7 @@ class App():
 
         self.fileSelection.configure(text=Path(self.selected_file).name)
         self._last_key = None
-        
+
         self.changeSlider(None)
         self._fit_window_to_content(self.main_root)
 
@@ -324,7 +324,7 @@ class App():
                 except Exception:
                     pass
             return
-        
+
         #1 gif no slider
         if nb_gif == 1:
             #self.generateGif.grid_remove()
@@ -453,7 +453,7 @@ class App():
 
     # ---------------- Display ----------------
     def _setup_slider_and_show_first(self, nb_gif: int):
-        
+
         #get directory
         target = self._target_dir()
 
@@ -516,7 +516,7 @@ class App():
                 self.gif_generator.setPreferedlevel(elevation)
             except Exception:
                 pass
-        
+
         #load gif into a gif player or start a new gif player
         gifPath = os.path.join(satellite, var, f"{elevation}.0.gif")
         if hasattr(self, "gif_widget"):

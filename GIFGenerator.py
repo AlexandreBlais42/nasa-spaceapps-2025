@@ -37,7 +37,7 @@ class GIFGenerator:
     def generateGifs(self):
         self.dataset = nc.Dataset(self.filepath)
         
-        pall = color.create_palette(*color)
+        pall = color.create_palette(*self.color)
 
         #Verification of lev layers
         dimensions = self.dataset.variables[self.variable].dimensions

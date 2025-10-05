@@ -175,11 +175,11 @@ class App():
         return bg_lbl
 
     def getDJValues(self):
-        luminosity =self.getSliderVal(self.luminositySliders)
-        contrast = self.getSliderVal(self.contrastSliders)
-        phase = self.getSliderVal(self.phaseSliders)
-        colorRange =self.getSliderVal(self.colorRangeSliders)
-        return luminosity,contrast,phase,colorRange
+        luminosity =np.array(self.getSliderVal(self.luminositySliders))
+        contrast = np.array(self.getSliderVal(self.contrastSliders))
+        phase = np.array(self.getSliderVal(self.phaseSliders))
+        colorRange =np.array(self.getSliderVal(self.colorRangeSliders))
+        return luminosity,contrast,colorRange*6.283185,phase*6.283185
 
     def getSliderVal(self,sliders):
         val = [None,None,None]
@@ -285,7 +285,7 @@ class App():
         self.changeSlider(None)
         self._fit_window_to_content(self.main_root)
 
-    def changeSlider(self, _):
+    def changeSlider(self, _ =None):
         #if no file, remove slider from UI
         print(self.selected_file)
         if self.selected_file is None or self.variablesDropdown.get() == "no var":
@@ -350,7 +350,6 @@ class App():
         self.displayGif(None)
 
     def verifyGifGeneration(self):
-        print("iakfhoaidhasoidhasod")
         if self.variablesDropdown.get() == "no var":
             print("no var")
             return
@@ -373,10 +372,9 @@ class App():
         print(nb)
 
         if nb > 0:
-            self._set_loading(False)
+            #self._set_loading(False)
             self._last_key = None
             self._setup_slider_and_show_first(nb)                
-            return
 
         #no gif
         #set loading
@@ -387,48 +385,69 @@ class App():
         if (self.gif_generator is None
             or getattr(self.gif_generator, "nc_path", None) != self.selected_file
             or getattr(self.gif_generator, "var", None) != var):
-            self.gif_generator = GIFGenerator(self.selected_file, var)
+            self.gif_generator = GIFGenerator(self.selected_file, var,color=self.getDJValues())
 
         #start gen
         self.gif_generator.startGeneratingGifs()
 
         # Reset polling counters & start
-        self._last_poll_count = -1
+        self._last_poll_count = 0
         self._stable_ticks = 0
         self._poll_loops = 0
         self._poll_generation_done()
+        
 
     # ---------------- Polling ----------------
     def _poll_generation_done(self):
-        """Updates UI if polling is done.
-        """
+        """Updates UI if polling is done."""
         target = self._target_dir()
         current_count = self._count_gifs(target)
 
-        #True if done
-        strong_ready = self._is_all_ready(current_count)
+        # Nombre attendu : priorité à self._expected_gifs, sinon essaye de le prendre du générateur
+        expected = getattr(self, "_expected_gifs", None)
+        if expected is None:
+            expected = getattr(self.gif_generator, "expected_count", None)
+        if expected is None:
+            expected = getattr(self.gif_generator, "n", None)  # autre nom possible
 
-        #verify if gif are still generating given a time lapse
-        if current_count == self._last_poll_count:
-            self._stable_ticks += 1
+        # Vrai si "tous générés" (fort)
+        strong_ready = (expected is not None) and (current_count >= int(expected))
+
+        # Détecter stagnation (aucune progression)
+        if current_count == getattr(self, "_last_poll_count", -1):
+            self._stable_ticks = getattr(self, "_stable_ticks", 0) + 1
         else:
             self._stable_ticks = 0
         self._last_poll_count = current_count
 
-        STABLE_TICKS_THRESHOLD = 6
-        TIMEOUT_TICKS = 120
+        STABLE_TICKS_THRESHOLD = 6   # ~3s si intervalle=500ms
+        TIMEOUT_TICKS = 120          # ~60s
 
-        ready = strong_ready or (current_count > 0 and self._stable_ticks >= STABLE_TICKS_THRESHOLD)
+        # Critère "prêt": 
+        #  - Si on connaît expected: prêt UNIQUEMENT quand current_count >= expected
+        #  - Si on ne connaît PAS expected: fallback = stable ticks ou timeout avec progrès >0
+        if expected is not None:
+            ready = strong_ready
+        else:
+            ready = (current_count > 0 and self._stable_ticks >= STABLE_TICKS_THRESHOLD)
 
-        self._poll_loops += 1
+        self._poll_loops = getattr(self, "_poll_loops", 0) + 1
         timeout = self._poll_loops >= TIMEOUT_TICKS
-        if timeout and current_count > 0:
-            ready = True
 
-        #ready to update UI
+        # En cas de timeout: n'autoriser "ready" que si on a au moins un résultat
+        if timeout and current_count > 0:
+            # Si expected est connu mais non atteint, on peut soit:
+            #  - rester en attente (ne rien faire), OU
+            #  - afficher partiel (décommenter la ligne suivante si tu veux forcer l'affichage partiel au timeout)
+            # ready = True
+            pass
+
+        # === Ready: mise à jour UI ===
         if ready:
+            
             self._set_loading(False)
-            #self.generateGif.grid_remove()
+            self.ElevationSlider.set(1)
+            self.changeSlider()
 
             current_var = self.variablesDropdown.get().split("/")[-1].strip()
             gen_var = getattr(self.gif_generator, "var", current_var)
@@ -439,7 +458,7 @@ class App():
                 self._setup_slider_and_show_first(nb)
 
             # Stop polling & reset
-            if self._poll_after_id:
+            if getattr(self, "_poll_after_id", None):
                 try:
                     self.main_root.after_cancel(self._poll_after_id)
                 except Exception:
@@ -450,7 +469,11 @@ class App():
             self._last_poll_count = -1
             return
 
-        # Continue polling
+        # === Continuer à poller ===
+        # (Optionnel) Mettre à jour une barre de progression si tu en as une:
+        # if expected:
+        #     self.progress_var.set(int(100 * current_count / max(1, expected)))
+
         self._poll_after_id = self.main_root.after(500, self._poll_generation_done)
 
     # ---------------- Display ----------------

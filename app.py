@@ -40,14 +40,14 @@ class App():
 
     # ---------------- UI init ----------------
     def initWidget(self):
-        self.paramsFrame = ctk.CTkFrame(self.main_root, corner_radius=10, border_width=1, border_color="grey")
+        self.paramsFrame = ctk.CTkFrame(self.main_root, corner_radius=2, border_width=1, border_color="grey")
         self.paramsFrame.grid(row=0, column=0, padx=5, pady=5)
 
-        self.gifFrame = ctk.CTkFrame(self.main_root, corner_radius=10, border_width=1, border_color="grey")
+        self.gifFrame = ctk.CTkFrame(self.main_root, corner_radius=2, border_width=1, border_color="grey")
         self.gifFrame.grid(row=0, column=1, padx=5, pady=5)
         
         #slider
-        self.elevatorFrame = ctk.CTkFrame(self.gifFrame,border_width=1,corner_radius=5)
+        self.elevatorFrame = ctk.CTkFrame(self.gifFrame,border_width=1,corner_radius=2)
         self.elevatorFrame.grid(row=0,column=1,padx=5,pady=5)
         self.elevationTitle = ctk.CTkLabel(self.elevatorFrame,text="Elevation")
         self.elevationTitle.grid(row=2,column=0,padx=5,pady=5)

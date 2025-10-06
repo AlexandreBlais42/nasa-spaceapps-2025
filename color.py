@@ -13,7 +13,7 @@ d = np.array([0.00, 0.33, 0.67])
 def create_palette(a: np.array, b: np.array, c: np.array, d: np.array):
     step = 1/256
     pall = [0] * 256
-    for t in range(0, 256):
+    for t in range(256):
         pa = (palette((t*step), a, b, c, d) * 256).astype(np.uint8)
         pall[t] = pa
 
@@ -26,12 +26,12 @@ def colorbar(abcd):
     width = 256
     height = 16
     step = width/256
-    colorbar = [[i*step for _ in range(height)] for i in range(width)]
+    colorbar = [[i for _ in range(height)] for i in range(width)]
     pall = create_palette(*abcd)
 
     image = Image.fromarray(np.array(colorbar,dtype=np.uint8))
     image.putpalette(pall)
-    #image.show()
+    # image.show()
     return image
 
 

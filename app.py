@@ -8,6 +8,7 @@ import os
 from PIL import Image, ImageTk, ImageSequence
 import shutil
 from color import colorbar
+from ImageGenerator import ImageGeneratorMethod
 
 colorPalette ={
     "luminosity":[0.5,0.5,0.5],
@@ -92,6 +93,9 @@ class App():
 
         #self.method = ctk.CTkCheckBox(self.paramsFrame,text="method")
         #self.method.grid(row=3,column=0,padx=5,pady=5)
+        self.method = ctk.CTkOptionMenu(self.paramsFrame, values=["Logarithmic","linear","superposition"])
+        self.method.grid(row=3,column=0)
+        
 
     # ---------------- Small helpers ----------------
     def _fit_window_to_content(self, content_widget, marginx=-100,marginy=-50, include_padding=True, thresh=6):
@@ -391,7 +395,14 @@ class App():
         if (self.gif_generator is None
             or getattr(self.gif_generator, "nc_path", None) != self.selected_file
             or getattr(self.gif_generator, "var", None) != var):
-            self.gif_generator = GIFGenerator(self.selected_file, var,color=self.getDJValues())
+            method = self.method.get().strip()
+            if method == "Logarithmic":
+                method = ImageGeneratorMethod.LOGARITHMIC
+            elif method == "Linear":
+                method = ImageGeneratorMethod.LINEAR
+            else : method = ImageGeneratorMethod.SUPERPOSITION
+
+            self.gif_generator = GIFGenerator(filepath=self.selected_file, variable=var,color=self.getDJValues(),method=method)
 
         #start gen
         self.colorBar =ctk.CTkLabel(self.gifFrame,image=ImageTk.PhotoImage(colorbar(self.getDJValues()).rotate(90,expand=True)),text="")

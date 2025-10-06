@@ -36,7 +36,7 @@ class GIFGenerator:
             newGif[0].save(dirpath+'/'+gif,save_all=True, append_images=newGif[1:], loop=0)
             #perte de résolution
 
-    def generateGifs(self, methode):
+    def generateGifs(self):
         self.dataset = nc.Dataset(self.filepath)
 
         pall = color.create_palette(*self.color)

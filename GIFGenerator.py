@@ -12,9 +12,9 @@ import netCDF4 as nc
 from ImageGenerator import ImageGenerator, ImageGeneratorMethod
 
 a = np.array([0.50, 0.50, 0.50])
-b = np.array([0.50, 0.50, 0.50])
-c = np.array([1.43, 1.40, 1.29])
-d = np.array([0.63, 0.33, 0.77])
+b = np.array([0.5, 0.5, 0.5])
+c = np.array([1.0, 1.0, 1.0])
+d = np.array([0.00, 0.33, 0.67])
 pall = color.create_palette(a, b, c, d)
 
 class GIFGenerator:

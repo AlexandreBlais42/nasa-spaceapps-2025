@@ -5,7 +5,7 @@ from PIL import Image
 def palette(t: float, a: np.array, b: np.array, c: np.array, d: np.array):
     return a + b * np.cos(2*np.pi * (c * t + d))
 
-a = np.array([0.48, 0.48, 0.48])
+a = np.array([0.50, 0.50, 0.50])
 b = np.array([0.5, 0.5, 0.5])
 c = np.array([1.0, 1.0, 1.0])
 d = np.array([0.00, 0.33, 0.67])

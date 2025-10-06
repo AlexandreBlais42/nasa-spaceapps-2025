@@ -36,6 +36,7 @@ class App():
         self._poll_loops = 0
 
         self.initWidget()
+        self.showColorbar(None)
         #background
         self.background = self.set_background(frame= self.main_root,image_path="bg2.webp")
         self.main_root.bind("<Configure>",self._on_configure_gate)

@@ -143,7 +143,7 @@ class ColorbarGUI:
         img.save(fname)
         print(f"Saved {fname}")
         
-    def save_abcd(a, b, c, d, _):
+    def save_abcd(_, a, b, c, d):
         """Sauvegarde les tableaux a,b,c,d dans un fichier .txt"""
         file_path = filedialog.asksaveasfilename(
             defaultextension=".txt",
@@ -152,14 +152,9 @@ class ColorbarGUI:
         )
         if not file_path:
             return  # utilisateur a annulé
-        
-        print(a)
-        print(b)
-        print(c)
-        print(d)
 
         text = (
-            f"a = np.array([{a[0][0]:.2f}, {a[0][1]:.2f}, {a[0][2]:.2f}])\n"
+            f"a = np.array([{a[0]:.2f}, {a[1]:.2f}, {a[2]:.2f}])\n"
             f"b = np.array([{b[0]:.2f}, {b[1]:.2f}, {b[2]:.2f}])\n"
             f"c = np.array([{c[0]:.2f}, {c[1]:.2f}, {c[2]:.2f}])\n"
             f"d = np.array([{d[0]:.2f}, {d[1]:.2f}, {d[2]:.2f}])\n"

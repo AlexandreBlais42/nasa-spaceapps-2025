@@ -10,9 +10,9 @@ import os
 
 janick = False
 
-satellite = "GEOSS"
+satellite = "MERRA2_monthly_mean"
 paths = []
-directory = 'GEOSS_DATA'
+directory = 'MERRA2-DATA'
 for entry in os.scandir(directory):
     if entry.is_file():
         paths.append(entry.path)
@@ -50,6 +50,8 @@ for v in dss[0].variables.keys():
     if v.isupper():
         list.append(v)
 
+print(list)
+
 for analysed_stuff in list:
     max_list = [dss[v].variables[analysed_stuff][:].max() for v in range(len(dss))]
     min_list = [dss[v].variables[analysed_stuff][:].min() for v in range(len(dss))]
@@ -59,7 +61,7 @@ for analysed_stuff in list:
     for i in range(len(dss)):
         pseudomatrix = dss[i].variables[analysed_stuff]
         image_generator = ImageGenerator(method=ImageGeneratorMethod.LOGARITHMIC, color=pall)
-        matrix = pseudomatrix[:]
+        matrix = pseudomatrix[0, :, :]
         image = image_generator.generateFromMatrix(matrix, maximum, minimum)
         images.append(image)
         Path(satellite).mkdir(parents=True, exist_ok=True)

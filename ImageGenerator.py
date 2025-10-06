@@ -80,22 +80,29 @@ class ImageGenerator:
             minimum_value = matrix.min()
             maximum_value = matrix.max()
 
-        self.method = ImageGeneratorMethod.LINEAR
-        minimum_value = self.method.transform(minimum_value)
-        maximum_value = self.method.transform(maximum_value)
+        if(ImageGeneratorMethod != ImageGeneratorMethod.SUPERPOSITION):
+            minimum_value = self.method.transform(minimum_value)
+            maximum_value = self.method.transform(maximum_value)
 
-        matrix1 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
+            matrix = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
+        else :            
+        
+            self.method = ImageGeneratorMethod.LINEAR
+            minimum_value = self.method.transform(minimum_value)
+            maximum_value = self.method.transform(maximum_value)
 
-        self.method = ImageGeneratorMethod.LOGARITHMIC
-        minimum_value = self.method.transform(minimum_value)
-        maximum_value = self.method.transform(maximum_value)
+            matrix1 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
 
-        matrix2 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
+            self.method = ImageGeneratorMethod.LOGARITHMIC
+            minimum_value = self.method.transform(minimum_value)
+            maximum_value = self.method.transform(maximum_value)
 
-        matrix = matrix1 + matrix2
-        minimum_value = matrix.min()
-        maximum_value = matrix.max()
-        matrix = (matrix - minimum_value) / (maximum_value - minimum_value)
+            matrix2 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
+
+            matrix = matrix1 + matrix2
+            minimum_value = matrix.min()
+            maximum_value = matrix.max()
+            matrix = (matrix - minimum_value) / (maximum_value - minimum_value)
 
 
         # matrix = self.Sobel(matrix)

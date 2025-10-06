@@ -14,12 +14,28 @@ def covarianceMatrix(matrixes: List[np.ndarray]) -> np.ndarray:
 
     return covariances
 
+
 if __name__ == "__main__":
-    m1 = np.array([
-        [1, 2],
-        [2, 3],
-    ])
+    from DataExtractor import DataExtractor
 
-    m2 = np.random.random((2,2))
+    file = "MERRA-2.nc4"
+    extractor = DataExtractor(file)
+    data = extractor.getData()
+    keys = list(data.keys())
+    n = len(data.keys())
 
-    print(covariance(m1, m2))
+    matrices = [i[0, 0, :, :] for i in data.values()]
+    covariances = covarianceMatrix(matrices)
+
+    for i in range(5):
+        covariances[i][i] = 0
+
+    max_covariance_index = np.argmax(covariances)
+    max_covariance_var_1 = keys[max_covariance_index % n]
+    max_covariance_var_2 = keys[max_covariance_index // n]
+    print(f"Maximal covariance: {covariances.max()} between {max_covariance_var_1} and {max_covariance_var_2}")
+
+    min_covariance_index = np.argmin(covariances)
+    min_covariance_var_1 = keys[min_covariance_index % n]
+    min_covariance_var_2 = keys[min_covariance_index // n]
+    print(f"Minimal covariance: {covariances.min()} between {min_covariance_var_1} and {min_covariance_var_2}")

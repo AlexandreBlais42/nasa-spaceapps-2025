@@ -43,7 +43,7 @@ class App():
     def showColorbar(self,_):
         try : self.colorBar.destroy
         except : pass
-        self.colorBar =ctk.CTkLabel(self.gifFrame,image=ImageTk.PhotoImage(colorbar(self.getDJValues()).rotate(90,expand=True)),text="")
+        self.colorBar =ctk.CTkLabel(self.gifFrame,image=ImageTk.PhotoImage(colorbar(self.getDJValues()).rotate(180,expand=True)),text="")
         self.colorBar.grid(row=0,column=3,padx=5,pady=5)
 
     # ---------------- UI init ----------------
@@ -400,8 +400,8 @@ class App():
             self.gif_generator = GIFGenerator(self.selected_file, var,color=self.getDJValues())
 
         #start gen
-        self.colorBar =ctk.CTkLabel(self.gifFrame,image=ImageTk.PhotoImage(colorbar(self.getDJValues()).rotate(90,expand=True)),text="")
-        self.colorBar.grid(row=0,column=3,padx=5,pady=5)
+        # self.colorBar =ctk.CTkLabel(self.gifFrame,image=ImageTk.PhotoImage(colorbar(self.getDJValues()).rotate(180,expand=True)),text="")
+        # self.colorBar.grid(row=0,column=3,padx=5,pady=5)
         self.gif_generator.startGeneratingGifs()
 
         # Reset polling counters & start

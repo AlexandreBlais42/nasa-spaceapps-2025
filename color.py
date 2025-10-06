@@ -29,7 +29,7 @@ def colorbar(abcd):
     colorbar = [[i*step for _ in range(height)] for i in range(width)]
     pall = create_palette(*abcd)
 
-    image = Image.fromarray(np.array(colorbar,dtype=np.uint8).T)
+    image = Image.fromarray(np.array(colorbar,dtype=np.uint8))
     image.putpalette(pall)
     #image.show()
     return image

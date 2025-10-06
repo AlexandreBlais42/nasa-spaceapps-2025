@@ -2,7 +2,7 @@
 import numpy as np
 from PIL import Image, ImageTk
 import tkinter as tk
-from tkinter import simpledialog
+from tkinter import simpledialog,Button,filedialog,messagebox
 
 # palette fournie
 def palette(t: float, a: np.ndarray, b: np.ndarray, c: np.ndarray, d: np.ndarray):
@@ -20,7 +20,7 @@ def make_colorbar_image(a, b, c, d, width=256, height=60):
 class ColorbarGUI:
     def __init__(self, master):
         self.master = master
-        master.title("Interactive palette - double-click valeurs pour éditer")
+        master.title("Interactive palette")
 
         # NOUVEAUX DEFAULTS demandés
         self.a = np.array([0.5, 0.5, 0.5], dtype=np.float32)
@@ -42,8 +42,8 @@ class ColorbarGUI:
         vecs = [
             ("a", 0.0, 1.0, self.a),
             ("b", 0.0, 1.0, self.b),
-            ("c", 0.0, 6.0, self.c),  # c a une plage plus grande
-            ("d", 0.0, 1.0, self.d),
+            ("c", 0.0, 3.0, self.c),  # c a une plage plus grande
+            ("d", 0.0, 1.5, self.d),
         ]
 
         # construction des sliders et labels
@@ -68,8 +68,17 @@ class ColorbarGUI:
         # bouton reset / save
         btn_frame = tk.Frame(master)
         btn_frame.grid(row=6, column=0, columnspan=12, pady=(8,0))
-        tk.Button(btn_frame, text="Reset valeurs", command=self.reset_values).pack(side=tk.LEFT, padx=6)
-        tk.Button(btn_frame, text="Sauver image", command=self.save_image).pack(side=tk.LEFT, padx=6)
+
+        tk.Button(btn_frame, text="Reset valeurs",
+                command=self.reset_values).pack(side=tk.LEFT, padx=6)
+
+        tk.Button(btn_frame, text="Sauver image",
+                command=self.save_image).pack(side=tk.LEFT, padx=6)
+
+        tk.Button(btn_frame, text="Sauvegarder a,b,c,d",
+                command=lambda: self.save_abcd(self.a, self.b, self.c, self.d)
+                ).pack(side=tk.LEFT, padx=6)
+
 
         # initial image
         self.update_image()
@@ -133,6 +142,33 @@ class ColorbarGUI:
         fname = "colorbar_saved.png"
         img.save(fname)
         print(f"Saved {fname}")
+        
+    def save_abcd(a, b, c, d, _):
+        """Sauvegarde les tableaux a,b,c,d dans un fichier .txt"""
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text files", "*.txt")],
+            title="Sauvegarder a,b,c,d"
+        )
+        if not file_path:
+            return  # utilisateur a annulé
+        
+        print(a)
+        print(b)
+        print(c)
+        print(d)
+
+        text = (
+            f"a = np.array([{a[0][0]:.2f}, {a[0][1]:.2f}, {a[0][2]:.2f}])\n"
+            f"b = np.array([{b[0]:.2f}, {b[1]:.2f}, {b[2]:.2f}])\n"
+            f"c = np.array([{c[0]:.2f}, {c[1]:.2f}, {c[2]:.2f}])\n"
+            f"d = np.array([{d[0]:.2f}, {d[1]:.2f}, {d[2]:.2f}])\n"
+        )
+
+        with open(file_path, "w") as f:
+            f.write(text)
+
+        messagebox.showinfo("Sauvegarde", f"Paramètres enregistrés dans :\n{file_path}")
 
 if __name__ == "__main__":
     root = tk.Tk()

@@ -45,7 +45,7 @@ def colorbar(abcd):
 
     image = Image.fromarray(np.array(colorbar,dtype=np.uint8).T)
     image.putpalette(pall)
-    image.show()
+    #image.show()
     return image
 
 

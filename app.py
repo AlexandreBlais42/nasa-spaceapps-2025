@@ -144,7 +144,7 @@ class App():
         win = self.main_root.winfo_toplevel()
         if event is not None and event.widget is not win:
             return
-        self._fit_window_to_content(self.main_root)
+        #self._fit_window_to_content(self.main_root)
 
     def set_background(self,frame, image_path, keep_aspect=True):
         frame.update_idletasks()
@@ -267,7 +267,7 @@ class App():
     # ---------------- Main actions ----------------
     def selectFile(self):
         self.selected_file = filedialog.askopenfilename(
-            title="select file",
+            title="Only choose NetCDF files -> .nc and .nc4",
             filetypes=(("NetCDF files", "*.nc4;*.nc"), ("all files", "*.*"))
         )
         if not self.selected_file:
@@ -286,7 +286,7 @@ class App():
         self._last_key = None
 
         self.changeSlider(None)
-        self._fit_window_to_content(self.main_root)
+        #self._fit_window_to_content(self.main_root)
 
     def changeSlider(self, _ =None):
         #if no file, remove slider from UI

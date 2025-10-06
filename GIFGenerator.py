@@ -6,6 +6,7 @@ import numpy as np
 import color
 import os
 
+
 import netCDF4 as nc
 
 from ImageGenerator import ImageGenerator, ImageGeneratorMethod
@@ -17,10 +18,11 @@ d = np.array([0.00, 0.33, 0.67])
 pall = color.create_palette(a, b, c, d)
 
 class GIFGenerator:
-    def __init__(self, filepath: str, variable: str, color=[a,b,c,d]):
+    def __init__(self,method, filepath: str, variable: str, color=[a,b,c,d]):
         self.filepath = filepath
         self.variable = variable
         self.color = color
+        self.method = method
     def setPreferedlevel(self, level: int):
         self.prefered_level = level
 
@@ -56,7 +58,7 @@ class GIFGenerator:
         self.data_maximum = self.data_matrix.max()
         self.data_minimum = self.data_matrix.min()
 
-        self.image_generator = ImageGenerator(method=ImageGeneratorMethod.TEST, color=pall)
+        self.image_generator = ImageGenerator(method=self.method, color=pall)
         self.satellite_name = Path(self.filepath).stem
         self.dirpath = f"{self.satellite_name}/{self.variable}/"
 

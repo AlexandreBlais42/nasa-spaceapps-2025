@@ -2,7 +2,7 @@ import numpy as np
 from typing import List
 
 def covariance(matrix_1: np.ndarray, matrix_2: np.ndarray) -> float:
-    return np.einsum("ij,ij->", matrix_1 - matrix_1.mean(), matrix_2 - matrix_2.mean()) / np.prod(matrix_1.shape)
+    return np.einsum("ij,ij->", matrix_1 - matrix_1.mean(), matrix_2 - matrix_2.mean()) / (np.prod(matrix_1.shape) + 1)
 
 def covarianceMatrix(matrixes: List[np.ndarray]) -> np.ndarray:
     n = len(matrixes)

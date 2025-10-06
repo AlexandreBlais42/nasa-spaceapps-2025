@@ -14,6 +14,8 @@ a = np.array([0.50, 0.50, 0.50])
 b = np.array([0.50, 0.50, 0.50])
 c = np.array([1.00, 1.00, 1.00])
 d = np.array([0.00, 0.33, 0.67])
+c = np.array([1.43, 1.40, 1.29])
+d = np.array([0.63, 0.33, 0.77])
 pall = color.create_palette(a, b, c, d)
 
 class GIFGenerator:
@@ -86,4 +88,5 @@ class GIFGenerator:
 if __name__ == "__main__":
     gif_generator = GIFGenerator("MERRA-2.nc4", "AIRDENS")
     gif_generator.startGeneratingGifs()
+    color.colorbar([a,b,c,d]).show()
     sleep(10)

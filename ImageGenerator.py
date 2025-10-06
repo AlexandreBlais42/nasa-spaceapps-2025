@@ -6,7 +6,7 @@ import math
 class ImageGeneratorMethod(Enum):
     LINEAR = 0
     LOGARITHMIC = 1
-    TEST = 2
+    SUPERPOSITION = 2
 
     def transform(self, value):
         match self.value:
@@ -14,7 +14,7 @@ class ImageGeneratorMethod(Enum):
                 return value
             case ImageGeneratorMethod.LOGARITHMIC.value:
                 return np.log(value)
-            case ImageGeneratorMethod.TEST.value:
+            case ImageGeneratorMethod.SUPERPOSITION.value:
                 return np.sqrt(value) * np.log(value)
             case _:
                 raise InvalidImageGeneratorMethodException

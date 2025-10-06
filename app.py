@@ -40,6 +40,12 @@ class App():
         self.background = self.set_background(frame= self.main_root,image_path="bg2.webp")
         self.main_root.bind("<Configure>",self._on_configure_gate)
         self.main_root.mainloop()
+        
+    def showColorbar(self,_):
+        try : self.colorBar.destroy
+        except : pass
+        self.colorBar =ctk.CTkLabel(self.gifFrame,image=ImageTk.PhotoImage(colorbar(self.getDJValues()).rotate(180,expand=True)),text="")
+        self.colorBar.grid(row=0,column=3,padx=5,pady=5)
 
     # ---------------- UI init ----------------
     def initWidget(self):
@@ -67,16 +73,16 @@ class App():
 
 
         #luminosity
-        self.luminosityFrame,self.luminositySliders = self.createDJTable(colorPalette['luminosity'],"luminosity")
+        self.luminosityFrame,self.luminositySliders = self.createDJTable(colorPalette['luminosity'],"luminosity",self.showColorbar)
         self.luminosityFrame.grid(row=0,column=0,padx=5,pady=5)
         #contrast
-        self.contrastFrame,self.contrastSliders = self.createDJTable(colorPalette['contrast'],"contrast")
+        self.contrastFrame,self.contrastSliders = self.createDJTable(colorPalette['contrast'],"contrast",self.showColorbar)
         self.contrastFrame.grid(row=0,column=1,padx=5,pady=5)
         #phase
-        self.phaseFrame,self.phaseSliders = self.createDJTable(colorPalette['phase'],"phase")
+        self.phaseFrame,self.phaseSliders = self.createDJTable(colorPalette['phase'],"phase",self.showColorbar)
         self.phaseFrame.grid(row=0,column=2,padx=5,pady=5)
         #color range
-        self.colorRangeFrame,self.colorRangeSliders = self.createDJTable(colorPalette['colorRange'],"color range")
+        self.colorRangeFrame,self.colorRangeSliders = self.createDJTable(colorPalette['colorRange'],"color range",self.showColorbar)
         self.colorRangeFrame.grid(row=0,column=3,padx=5,pady=5)
 
         #gif button
@@ -200,7 +206,7 @@ class App():
         label.grid(row=1,column=0,padx=5,pady=5,sticky="ew",columnspan=3)
         djTable = [None,None,None]
         for i,val in enumerate(vector):
-            djTable[i] = ctk.CTkSlider(frame,orientation="vertical",from_=0,to=1)#,)
+            djTable[i] = ctk.CTkSlider(frame,orientation="vertical",from_=0,to=1,command=func)
             djTable[i].grid(row=0,column=i,padx=5,pady=5)
             djTable[i].set(val)
         return frame,djTable
@@ -405,8 +411,8 @@ class App():
             self.gif_generator = GIFGenerator(filepath=self.selected_file, variable=var,color=self.getDJValues(),method=method)
 
         #start gen
-        self.colorBar =ctk.CTkLabel(self.gifFrame,image=ImageTk.PhotoImage(colorbar(self.getDJValues()).rotate(90,expand=True)),text="")
-        self.colorBar.grid(row=0,column=3,padx=5,pady=5)
+        # self.colorBar =ctk.CTkLabel(self.gifFrame,image=ImageTk.PhotoImage(colorbar(self.getDJValues()).rotate(180,expand=True)),text="")
+        # self.colorBar.grid(row=0,column=3,padx=5,pady=5)
         self.gif_generator.startGeneratingGifs()
 
         # Reset polling counters & start

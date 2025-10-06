@@ -9,7 +9,7 @@ print(keys)
 #print(data)
 #palette = ds["palette"].values
 
-#rgb = palette[data] 
+#rgb = palette[data]
 #print(rgb)
 data = ds["STDX"]
 print(ds["coord_system"])

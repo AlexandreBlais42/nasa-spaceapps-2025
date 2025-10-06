@@ -7,6 +7,7 @@ from pathlib import Path
 import os
 from PIL import Image, ImageTk, ImageSequence
 import shutil
+from color import colorbar
 
 colorPalette ={
     "luminosity":[0.5,0.5,0.5],
@@ -61,6 +62,7 @@ class App():
         self.djTable = []
         self.djTableFrame = ctk.CTkFrame(self.gifFrame,border_width=1)
         self.djTableFrame.grid(row=0,column=2,padx=5,pady=5)
+        
 
 
         #luminosity
@@ -392,6 +394,8 @@ class App():
             self.gif_generator = GIFGenerator(self.selected_file, var,color=self.getDJValues())
 
         #start gen
+        self.colorBar =ctk.CTkLabel(self.gifFrame,image=ImageTk.PhotoImage(colorbar(self.getDJValues()).rotate(90,expand=True)),text="")
+        self.colorBar.grid(row=0,column=3,padx=5,pady=5)
         self.gif_generator.startGeneratingGifs()
 
         # Reset polling counters & start

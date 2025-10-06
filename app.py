@@ -62,7 +62,7 @@ class App():
         self.djTable = []
         self.djTableFrame = ctk.CTkFrame(self.gifFrame,border_width=1)
         self.djTableFrame.grid(row=0,column=2,padx=5,pady=5)
-        
+
 
 
         #luminosity
@@ -380,7 +380,7 @@ class App():
             name =Path(name)
             shutil.rmtree(os.path.join(name.stem,self.variablesDropdown.get().split("/")[-1].strip()))
             self._last_key = None
-            #self._setup_slider_and_show_first(nb)                
+            #self._setup_slider_and_show_first(nb)
 
         #no gif
         #set loading
@@ -403,7 +403,7 @@ class App():
         self._stable_ticks = 0
         self._poll_loops = 0
         self._poll_generation_done()
-        
+
 
     # ---------------- Polling ----------------
     def _poll_generation_done(self):
@@ -414,7 +414,7 @@ class App():
         except:
             self.old =0
         self.current_count = self._count_gifs(target)
-        
+
         # === Ready: mise à jour UI ===
         print(self.current_count)
         if self.current_count ==self.old and self.old !=0:
@@ -504,8 +504,8 @@ class App():
         if self._last_key == key:
             return
         self._last_key = key
-        #change 
-        
+        #change
+
         self.elevationLabel.configure(text=np.abs(self.ElevationSlider.cget("from_")-elevation))
         #define prefered level
         if self.gif_generator is not None:

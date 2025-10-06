@@ -91,7 +91,7 @@ class ImageGenerator:
         maximum_value = self.method.transform(maximum_value)
 
         matrix2 = (1- (self.method.transform(matrix) - minimum_value) / (maximum_value - minimum_value))
-        
+
         matrix = matrix1 + matrix2
         minimum_value = matrix.min()
         maximum_value = matrix.max()
